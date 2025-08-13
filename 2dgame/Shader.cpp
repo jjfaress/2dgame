@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include<glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader& Shader::use()
 {
@@ -10,14 +11,14 @@ Shader& Shader::use()
 void Shader::compile(const char* vertexSource, const char* fragmentSource)
 {
 	unsigned int vertShader, fragShader;
-
+	//std::cout << vertexSource;
 	vertShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertShader, 1, &vertexSource, NULL);
+	glShaderSource(vertShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertShader);
 	checkCompileErrors(vertShader, "VERTEX");
 
 	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragShader, 1, &fragmentSource, NULL);
+	glShaderSource(fragShader, 1, &fragmentSource, nullptr);
 	glCompileShader(fragShader);
 	checkCompileErrors(fragShader, "FRAGMENT");
 
@@ -29,10 +30,9 @@ void Shader::compile(const char* vertexSource, const char* fragmentSource)
 
 	glDeleteShader(vertShader);
 	glDeleteShader(fragShader);
-
 }
 
-void Shader::checkCompileErrors(unsigned int object, std::string type)
+void Shader::checkCompileErrors(unsigned int object, std::string type) const
 {
 	int success;
 	char infoLog[1024];
@@ -54,4 +54,31 @@ void Shader::checkCompileErrors(unsigned int object, std::string type)
 			std::cerr << "ERROR::PROGRAM linking error on " << type << "\n" << infoLog << std::endl;
 		}
 	}
+}
+
+void Shader::setInt(const char* name, int val, bool useShader)
+{
+	if (useShader)
+	{
+		this->use();
+	}
+	glUniform1i(glGetUniformLocation(this->ID, name), val);
+}
+
+void Shader::setVec3(const char* name, const glm::vec3 val, bool useShader)
+{
+	if (useShader)
+	{
+		this->use();
+	}
+	glUniform3f(glGetUniformLocation(this->ID, name), val.x, val.y, val.z);
+}
+
+void Shader::setMat4(const char* name, const glm::mat4 &mat, bool useShader)
+{
+	if (useShader)
+	{
+		this->use();
+	}
+	glUniformMatrix4fv(glGetUniformLocation(this->ID, name), 1, GL_FALSE, glm::value_ptr(mat));
 }

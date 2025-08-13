@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 #include <fstream>
 #include <sstream>
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 std::map<std::string, Texture2D> ResourceManager::Textures;
@@ -67,7 +68,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 	unsigned char* data = stbi_load(file, &width, &height, &channels, 0);
 	if (!data)
 	{
-		std::cout << "ERROR::TEXTURE failed to load texture \n" << stbi_failure_reason << endl;
+		std::cout << "ERROR::TEXTURE failed to load texture \n" << stbi_failure_reason << std::endl;
 	}
 	else
 	{
