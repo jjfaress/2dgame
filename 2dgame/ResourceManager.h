@@ -4,7 +4,6 @@
 #include "Shader.h"
 #include "Texture.h"
 #include <map>
-#include <glad/glad.h>
 
 class ResourceManager {
 public:
