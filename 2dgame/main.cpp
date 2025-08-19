@@ -12,8 +12,7 @@ void framebufferSize(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-Level level(30, 30);
+Level level(30, 30, static_cast<unsigned int>(std::time(nullptr)));
 
 int main()
 {
@@ -43,9 +42,9 @@ int main()
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glClearColor(0.52f, 0.155f, 0.235f, 0.0f);
-	level.init();
+
 	level.collapse(3, 5);
+	//level.propagate(3, 5);
 	game.init();
 
 	float deltaTime = 0.0f;
@@ -60,7 +59,7 @@ int main()
 		game.render();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		
+
 	}
 	ResourceManager::clear();
 	glfwTerminate();

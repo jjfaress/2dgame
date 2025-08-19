@@ -18,6 +18,9 @@
     <Filter Include="scripts">
       <UniqueIdentifier>{5b3e3433-6184-493b-bea7-8377bcc665cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{2bf50d48-860d-4068-82d0-ca1fe511211d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -47,6 +50,9 @@
     <ClCompile Include="Level.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ConfigLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -73,7 +79,7 @@
     <ClInclude Include="GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WFC.h">
+    <ClInclude Include="ConfigLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,8 +90,8 @@
     <None Include="spriteShader.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="neighbors.lua">
-      <Filter>scripts</Filter>
+    <None Include="map.yaml">
+      <Filter>config</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

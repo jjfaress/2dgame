@@ -1,0 +1,22 @@
+tile_type_count: 6
+tile_types:
+  - id: 0
+    name: water
+  - id: 1
+    name: beach
+  - id: 2
+    name: forrest
+  - id: 3
+    name: grass
+  - id: 4
+    name: desert
+  - id: 5
+    name: mountains
+
+valid_neighbors:
+  0: [0, 1]    
+  1: [0, 1, 3]
+  2: [2, 3, 4]
+  3: [1, 2, 3, 4]
+  4: [2, 3, 5]
+  5: [4, 5]
