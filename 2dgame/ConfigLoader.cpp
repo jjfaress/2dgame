@@ -1,45 +1,64 @@
 #include "ConfigLoader.h"
 #include <iostream>
 
-bool ConfigLoader::loadFromFile(const std::string& fileName)
+ConfigLoader* ConfigLoader::instance = nullptr;
+
+ConfigLoader::ConfigLoader(const std::string& path)
 {
 	try
 	{
-		YAML::Node config = YAML::LoadFile(fileName);
-		if (config["tile_types"])
+		YAML::Node config = YAML::LoadFile(path);
+		if (config["aliases"])
 		{
-			loadTileTypes(config["tile_types"]);
+			loadAliases(config["aliases"]);
 		}
 		if (config["valid_neighbors"])
 		{
 			loadValidNeighbors(config["valid_neighbors"]);
 		}
-		else
-		{
-			std::cout << "no neighbors";
-		}
-		return true;
 	}
 	catch (const YAML::Exception& e)
 	{
-		std::cerr << "YAML error" << e.what() << std::endl;
-		return false;
+		std::cerr << "Config not loaded :: YAML error: " << e.what() << std::endl;
 	}
 }
 
-void ConfigLoader::loadTileTypes(const YAML::Node& node)
+ConfigLoader& ConfigLoader::getInstance(const std::string& path)
 {
+	if (instance == nullptr)
+	{
+		if (path.empty())
+		{
+			throw std::runtime_error("File path missing");
+		}
+		instance = new ConfigLoader(path);
+	}
+	return *instance;
+}
+
+void ConfigLoader::loadAliases(const YAML::Node& node)
+{
+	for (const auto& item : node)
+	{
+		std::string name = item.begin()->first.as<std::string>();
+		int id = item.begin()->second.as<int>();
+		this->aliases[name] = id;
+		this->tiletypes.push_back(id);
+	}
 }
 
 void ConfigLoader::loadValidNeighbors(const YAML::Node& node)
 {
-	for (const auto& tileType : node)
+	for (const auto& pair : node)
 	{
+		std::string sourceName = pair.first.as<std::string>();
+		int sourceId = aliases[sourceName];
+		std::vector<std::string> neighborsNames = pair.second.as<std::vector<std::string>>();
 		std::vector<int> neighbors;
-		for (const auto& neighbor : tileType)
+		for (auto name : neighborsNames)
 		{
-			neighbors.push_back(neighbor.as<int>());
+			neighbors.push_back(aliases[name]);
 		}
-		this->validNeighbors[tileType.as<int>()] = neighbors;
+		this->validNeighbors[sourceId] = neighbors;
 	}
 }

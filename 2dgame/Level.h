@@ -12,17 +12,16 @@ struct Tile {
 	bool collapsed = false;
 	int type;
 
-	Tile(glm::vec2 position) : position(position) {}
+	Tile(glm::vec2 position, std::vector<int> possibilities) : position(position), possibilities(possibilities) {}
 };
-
 
 class Level {
 public:
 	bool isReady;
 	int WIDTH, HEIGHT;
 	std::vector<std::vector<Tile>> tiles;
-	ConfigLoader config;
 	unsigned int seed;
+	ConfigLoader& config;
 
 	Level(int width, int height, unsigned int seed);
 
