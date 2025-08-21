@@ -15,7 +15,7 @@ public:
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
 
-	static ConfigLoader& getInstance(const char* path);
+	static ConfigLoader& getInstance(const char* path = nullptr);
 	
 private:
 	static ConfigLoader* instance;

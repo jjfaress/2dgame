@@ -1,7 +1,7 @@
 map_width: 30
 map_height: 30
 
-tile_type_count: 6
+
 
 aliases:
   water: 0		# type: id

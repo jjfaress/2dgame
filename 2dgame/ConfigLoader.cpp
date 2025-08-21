@@ -23,8 +23,9 @@ ConfigLoader::ConfigLoader(const char* path)
 	}
 }
 
-ConfigLoader& ConfigLoader::getInstance(const char* path = nullptr)
+ConfigLoader& ConfigLoader::getInstance(const char* path)
 {
+
 	if (instance == nullptr)
 	{
 		if (path == nullptr)
@@ -35,6 +36,8 @@ ConfigLoader& ConfigLoader::getInstance(const char* path = nullptr)
 	}
 	return *instance;
 }
+
+
 
 void ConfigLoader::loadAliases(const YAML::Node& node)
 {

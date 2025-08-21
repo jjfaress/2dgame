@@ -2,8 +2,10 @@
 #include <GLFW/glfw3.h>
 #include "Game.h"
 #include "ResourceManager.h"
-
+#include "ConfigLoader.h"
 #include "Map.h"
+
+ConfigLoader& config = ConfigLoader::getInstance("map.yaml");
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
@@ -44,6 +46,7 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	map.generate();
+	
 	game.init();
 
 	float deltaTime = 0.0f;

@@ -3,13 +3,12 @@
 #include <unordered_set>
 #include <random>
 
-
 Map::Map(int width, int height, uint seed) :
 	WIDTH(width),
 	HEIGHT(height),
 	seed(seed),
 	isReady(false),
-	config(ConfigLoader::getInstance("map.yaml"))
+	config(ConfigLoader::getInstance())
 {
 	this->grid.reserve(this->HEIGHT);
 	for (int i = 0; i < this->WIDTH; i++)
@@ -117,7 +116,7 @@ void Map::propagate(int x, int y, int &collapseCount)
 				);
 			}
 
-			neighborPos.shrink_to_fit();
+			//neighborPos.shrink_to_fit();
 
 			if (neighborTile.possibilities.size() != originalSize)
 			{
