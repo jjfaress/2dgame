@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "ResourceManager.h"
 
-#include "Level.h"
+#include "Map.h"
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
@@ -12,7 +12,7 @@ void framebufferSize(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
-Level level(30, 30, static_cast<unsigned int>(std::time(nullptr)));
+Map level(30, 30, static_cast<unsigned int>(std::time(nullptr)));
 
 int main()
 {
@@ -44,7 +44,6 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	level.collapse(3, 5);
-	//level.propagate(3, 5);
 	game.init();
 
 	float deltaTime = 0.0f;

@@ -51,13 +51,16 @@ void ConfigLoader::loadValidNeighbors(const YAML::Node& node)
 {
 	for (const auto& pair : node)
 	{
+
 		std::string sourceName = pair.first.as<std::string>();
 		int sourceId = aliases[sourceName];
 		std::vector<std::string> neighborsNames = pair.second.as<std::vector<std::string>>();
-		std::vector<int> neighbors;
+		//std::vector<int> neighbors;
+		std::unordered_set<int> neighbors;
 		for (auto name : neighborsNames)
 		{
-			neighbors.push_back(aliases[name]);
+			//neighbors.push_back(aliases[name]);
+			neighbors.insert(aliases[name]);
 		}
 		this->validNeighbors[sourceId] = neighbors;
 	}
