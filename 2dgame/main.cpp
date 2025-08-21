@@ -12,7 +12,7 @@ void framebufferSize(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
-Map level(30, 30, static_cast<unsigned int>(std::time(nullptr)));
+Map map(30, 30, static_cast<uint>(std::time(nullptr)));
 
 int main()
 {
@@ -43,7 +43,7 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	level.collapse(3, 5);
+	map.generate();
 	game.init();
 
 	float deltaTime = 0.0f;

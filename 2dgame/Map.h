@@ -4,6 +4,9 @@
 #include "SpriteRenderer.h"
 #include <vector>
 #include "ConfigLoader.h"
+#include <random>
+
+typedef unsigned int uint;
 
 struct Tile {
 	glm::vec2 position;
@@ -19,11 +22,15 @@ public:
 	bool isReady;
 	int WIDTH, HEIGHT;
 	std::vector<std::vector<Tile>> grid;
-	unsigned int seed;
+	Map(int width, int height, uint seed);
+	void generate();
 
-	Map(int width, int height, unsigned int seed);
+private:
+	uint seed;
 	ConfigLoader& config;
-	void collapse(int x, int y);
-	void propagate(int x, int y);
+	void collapse(int x, int y, std::mt19937 rng, int &collapseCount);
+	void collapse(int x, int y, uint seed, int& collapseCount);
+	void propagate(int x, int y, int &collapseCount);
+	void findLowestEntropy();
 };
 #endif

@@ -3,7 +3,7 @@
 
 ConfigLoader* ConfigLoader::instance = nullptr;
 
-ConfigLoader::ConfigLoader(const std::string& path)
+ConfigLoader::ConfigLoader(const char* path)
 {
 	try
 	{
@@ -23,11 +23,11 @@ ConfigLoader::ConfigLoader(const std::string& path)
 	}
 }
 
-ConfigLoader& ConfigLoader::getInstance(const std::string& path)
+ConfigLoader& ConfigLoader::getInstance(const char* path = nullptr)
 {
 	if (instance == nullptr)
 	{
-		if (path.empty())
+		if (path == nullptr)
 		{
 			throw std::runtime_error("File path missing");
 		}
@@ -38,18 +38,18 @@ ConfigLoader& ConfigLoader::getInstance(const std::string& path)
 
 void ConfigLoader::loadAliases(const YAML::Node& node)
 {
-	for (const auto& item : node)
+	for (const auto pair : node)
 	{
-		std::string name = item.begin()->first.as<std::string>();
-		int id = item.begin()->second.as<int>();
+		std::string name = pair.first.as<std::string>();
+		int id = pair.second.as<int>();
 		this->aliases[name] = id;
-		this->tiletypes.push_back(id);
+		this->tileTypes.push_back(id);
 	}
 }
 
 void ConfigLoader::loadValidNeighbors(const YAML::Node& node)
 {
-	for (const auto& pair : node)
+	for (const auto pair : node)
 	{
 
 		std::string sourceName = pair.first.as<std::string>();

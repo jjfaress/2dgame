@@ -8,19 +8,18 @@
 class ConfigLoader
 {
 public:
-	std::vector<int> tiletypes;
+	std::vector<int> tileTypes;
 	std::unordered_map<int, std::unordered_set<int>> validNeighbors;
-	//std::unordered_map<int, std::set<int>> validNeighbors;
 	std::unordered_map<std::string, int> aliases;
 
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
 
-	static ConfigLoader& getInstance(const std::string& path);
+	static ConfigLoader& getInstance(const char* path);
 	
 private:
 	static ConfigLoader* instance;
-	ConfigLoader(const std::string& path);
+	ConfigLoader(const char* path);
 	void loadValidNeighbors(const YAML::Node& node);
 	void loadTileTypes(const YAML::Node& node);
 	void loadAliases(const YAML::Node& node);
