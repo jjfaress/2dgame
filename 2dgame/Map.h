@@ -1,10 +1,12 @@
 #pragma once
 #ifndef MAP_H
 #define MAP_H
-#include "SpriteRenderer.h"
 #include <vector>
 #include "ConfigLoader.h"
 #include <random>
+#include "Texture.h"
+#include <glm/glm.hpp>
+#include "SpriteRenderer.h"
 
 typedef unsigned int uint;
 
@@ -13,24 +15,35 @@ struct Tile {
 	std::vector<int> possibilities;
 	bool collapsed = false;
 	int type;
-
+	const char* texture = nullptr;
 	Tile(glm::vec2 position, std::vector<int>& poss) : position(position), possibilities(poss) {}
 };
 
+typedef std::vector<std::vector<Tile>> Grid;
+
 class Map {
 public:
-	bool isReady;
 	int WIDTH, HEIGHT;
-	std::vector<std::vector<Tile>> grid;
+	Grid grid;
+	bool isReady;
 	Map(int width, int height, uint seed);
+	//Map(int width, int height, uint seed) :
+	//	WIDTH(width),
+	//	HEIGHT(height),
+	//	isReady(false),
+	//	seed(seed),
+	//	config(ConfigLoader::getInstance()) {}
 	void generate();
+	void init();
+	void draw(SpriteRenderer& renderer);
 
 private:
 	uint seed;
 	ConfigLoader& config;
-	void collapse(int x, int y, std::mt19937 rng, int &collapseCount);
-	void collapse(int x, int y, uint seed, int& collapseCount);
-	void propagate(int x, int y, int &collapseCount);
+	void collapse(int x, int y, std::mt19937 rng, int& collapseCount);
+	void collapse(int x, int y, uint& seed, int& collapseCount);
+	void propagate(int x, int y, int& collapseCount);
+	std::vector<Tile> postProcess();
 	void findLowestEntropy();
 };
 #endif

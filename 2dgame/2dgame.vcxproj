@@ -132,6 +132,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -152,12 +153,9 @@
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="map.yaml" />
+    <None Include="config.yaml" />
     <None Include="spriteShader.frag" />
     <None Include="spriteShader.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\sprite.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

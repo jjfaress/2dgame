@@ -4,7 +4,7 @@
 SpriteRenderer::SpriteRenderer(Shader& shader)
 {
 	this->shader = shader;
-	this->initRenderData();
+	initRenderData();
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -20,7 +20,6 @@ void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, glm::vec2
 	model = glm::scale(model, glm::vec3(size, 1.0f));
 
 	this->shader.setMat4("model", model);
-	//this->shader.setVec3("spriteColor", color);
 
 	glActiveTexture(GL_TEXTURE0);
 	texture.bind();

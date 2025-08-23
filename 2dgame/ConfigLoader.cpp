@@ -8,9 +8,9 @@ ConfigLoader::ConfigLoader(const char* path)
 	try
 	{
 		YAML::Node config = YAML::LoadFile(path);
-		if (config["aliases"])
+		if (config["tile_data"])
 		{
-			loadAliases(config["aliases"]);
+			loadTileData(config["tile_data"]);
 		}
 		if (config["valid_neighbors"])
 		{
@@ -37,32 +37,29 @@ ConfigLoader& ConfigLoader::getInstance(const char* path)
 	return *instance;
 }
 
-
-
-void ConfigLoader::loadAliases(const YAML::Node& node)
+void ConfigLoader::loadTileData(const YAML::Node& node)
 {
-	for (const auto pair : node)
+	for (const auto& pair : node)
 	{
-		std::string name = pair.first.as<std::string>();
-		int id = pair.second.as<int>();
+		std::string name = pair.second["name"].as<std::string>();
+		int id = pair.first.as<int>();
+		std::string texture = pair.second["texture"].as<std::string>();
 		this->aliases[name] = id;
+		this->textures[id] = texture;
 		this->tileTypes.push_back(id);
 	}
 }
 
 void ConfigLoader::loadValidNeighbors(const YAML::Node& node)
 {
-	for (const auto pair : node)
+	for (const auto& pair : node)
 	{
-
 		std::string sourceName = pair.first.as<std::string>();
 		int sourceId = aliases[sourceName];
 		std::vector<std::string> neighborsNames = pair.second.as<std::vector<std::string>>();
-		//std::vector<int> neighbors;
 		std::unordered_set<int> neighbors;
-		for (auto name : neighborsNames)
+		for (const auto& name : neighborsNames)
 		{
-			//neighbors.push_back(aliases[name]);
 			neighbors.insert(aliases[name]);
 		}
 		this->validNeighbors[sourceId] = neighbors;

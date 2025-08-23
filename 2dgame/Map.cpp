@@ -2,13 +2,18 @@
 #include <queue>
 #include <unordered_set>
 #include <random>
+#include <iostream>
+#include "ResourceManager.h"
 
 Map::Map(int width, int height, uint seed) :
 	WIDTH(width),
 	HEIGHT(height),
-	seed(seed),
 	isReady(false),
+	seed(seed),
 	config(ConfigLoader::getInstance())
+{}
+
+void Map::init()
 {
 	this->grid.reserve(this->HEIGHT);
 	for (int i = 0; i < this->WIDTH; i++)
@@ -35,19 +40,20 @@ void Map::collapse(int x, int y, std::mt19937 rng, int& collapseCount)
 	Tile& tile = this->grid[x][y];
 	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.possibilities.size() - 1);
 	tile.type = tile.possibilities[poss(rng)];
+	tile.texture = config.textures[tile.type].c_str();
 	tile.collapsed = true;
 	collapseCount++;
 	tile.possibilities.clear();
 	tile.possibilities.shrink_to_fit();
 }
 
-void Map::collapse(int x, int y, uint seed, int& collapseCount)
+void Map::collapse(int x, int y, uint& seed, int& collapseCount)
 {
 	std::mt19937 rng(seed);
 	collapse(x, y, rng, collapseCount);
 }
 
-void Map::propagate(int x, int y, int &collapseCount)
+void Map::propagate(int x, int y, int& collapseCount)
 {
 	std::queue<glm::ivec2> queue;
 	queue.push(glm::ivec2(x, y));
@@ -67,14 +73,15 @@ void Map::propagate(int x, int y, int &collapseCount)
 		for (int dir = 0; dir < 4; dir++)
 		{
 			glm::vec2 neighbor = source + directions[dir];
+
 			if (neighbor.x < 0 || neighbor.x >= this->WIDTH ||
 				neighbor.y < 0 || neighbor.y >= this->HEIGHT)
 			{
 				continue;
 			}
 
-			Tile& sourceTile = this->grid[source.x][source.y];
-			Tile& neighborTile = this->grid[neighbor.x][neighbor.y];
+			const Tile& sourceTile = this->grid[source.x][source.y];
+			const Tile& neighborTile = this->grid[neighbor.x][neighbor.y];
 
 			if (this->grid[neighbor.x][neighbor.y].collapsed)
 			{
@@ -116,8 +123,6 @@ void Map::propagate(int x, int y, int &collapseCount)
 				);
 			}
 
-			//neighborPos.shrink_to_fit();
-
 			if (neighborTile.possibilities.size() != originalSize)
 			{
 				if (neighborTile.possibilities.size() == 1)
@@ -152,15 +157,33 @@ void Map::generate()
 			propagate(x, y, cellsCollapsed);
 		}
 	}
-
 	this->isReady = true;
+}
 
-	for (int i = 0; i < this->WIDTH; i++)
+std::vector<Tile> Map::postProcess()
+{
+	if (this->isReady)
 	{
-		for (int j = 0; j < this->HEIGHT; j++)
+		std::vector<Tile> tiles;
+		for (int i = 0; i < this->grid.size(); i++)
 		{
-			std::cout << this->grid[i][j].type;
+			tiles.insert(tiles.end(), this->grid[i].begin(), this->grid[i].end());
 		}
-		std::cout << std::endl;
+		return tiles;
 	}
 }
+
+void Map::draw(SpriteRenderer& renderer)
+{
+	for (const Tile& tile : postProcess())
+	{
+		std::string texPath = config.textures[tile.type];
+		ResourceManager::loadTexture(
+			("assets/" + texPath).c_str(),
+			false, 
+			config.textures[tile.type]);
+		Texture2D texture = ResourceManager::getTexture(texPath);
+		renderer.drawSprite(texture, tile.position);
+	}
+}
+

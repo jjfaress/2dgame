@@ -1,6 +1,7 @@
 #pragma once
 #ifndef GAME_H
 #define GAME_H
+#include "Map.h"
 
 enum GameState {
 	GAME_ACTIVE,
@@ -12,12 +13,16 @@ class Game {
 public:
 	GameState State;
 	bool Keys[1024];
-	unsigned int WIDTH, HEIGHT;
-	Game(unsigned int width, unsigned int height);
+	uint WIDTH, HEIGHT;
+	Grid* grid;
+
+	Game(uint width, uint height);
 	~Game();
+
 	void init();
 	void update(float dt);
 	void render();
 	void processInput();
+
 };
 #endif

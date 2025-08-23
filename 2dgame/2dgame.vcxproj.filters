@@ -53,6 +53,9 @@
     <ClCompile Include="ConfigLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -93,13 +96,8 @@
     <None Include="spriteShader.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="map.yaml">
+    <None Include="config.yaml">
       <Filter>config</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\sprite.png">
-      <Filter>Assets</Filter>
-    </Image>
   </ItemGroup>
 </Project>

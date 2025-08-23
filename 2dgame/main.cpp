@@ -2,10 +2,6 @@
 #include <GLFW/glfw3.h>
 #include "Game.h"
 #include "ResourceManager.h"
-#include "ConfigLoader.h"
-#include "Map.h"
-
-ConfigLoader& config = ConfigLoader::getInstance("map.yaml");
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
@@ -14,7 +10,6 @@ void framebufferSize(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
-Map map(30, 30, static_cast<uint>(std::time(nullptr)));
 
 int main()
 {
@@ -44,8 +39,6 @@ int main()
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	map.generate();
 	
 	game.init();
 
