@@ -25,14 +25,9 @@ class Map {
 public:
 	int WIDTH, HEIGHT;
 	Grid grid;
+	std::vector<Tile> finalTiles;
 	bool isReady;
 	Map(int width, int height, uint seed);
-	//Map(int width, int height, uint seed) :
-	//	WIDTH(width),
-	//	HEIGHT(height),
-	//	isReady(false),
-	//	seed(seed),
-	//	config(ConfigLoader::getInstance()) {}
 	void generate();
 	void init();
 	void draw(SpriteRenderer& renderer);
@@ -43,7 +38,7 @@ private:
 	void collapse(int x, int y, std::mt19937 rng, int& collapseCount);
 	void collapse(int x, int y, uint& seed, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
-	std::vector<Tile> postProcess();
+	void postProcess();
 	void findLowestEntropy();
 };
 #endif

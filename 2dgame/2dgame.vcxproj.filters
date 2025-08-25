@@ -12,9 +12,6 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{2d08258a-8813-44a3-a00a-164a9cfd9d63}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{94db1dfa-0d3a-4a36-acbd-83b21bb99ac3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="scripts">
       <UniqueIdentifier>{5b3e3433-6184-493b-bea7-8377bcc665cb}</UniqueIdentifier>
     </Filter>

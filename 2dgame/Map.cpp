@@ -11,20 +11,26 @@ Map::Map(int width, int height, uint seed) :
 	isReady(false),
 	seed(seed),
 	config(ConfigLoader::getInstance())
-{}
+{
+}
 
 void Map::init()
 {
-	this->grid.reserve(this->HEIGHT);
+	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
 	{
 		std::vector<Tile> row;
-		row.reserve(this->WIDTH);
+		row.reserve(this->HEIGHT);
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
 			row.emplace_back(Tile(glm::vec2(i, j), config.tileTypes));
 		}
 		this->grid.emplace_back(std::move(row));
+	}
+
+	for (const auto& type : config.tileTypes)
+	{
+		ResourceManager::loadTexture(("assets/" + config.textures[type]).c_str(), false, config.textures[type]);
 	}
 }
 
@@ -33,6 +39,7 @@ void Map::collapse(int x, int y, std::mt19937 rng, int& collapseCount)
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].possibilities.empty())
 	{
+		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n";
 		throw std::runtime_error("error collapsing");
 		return;
 	}
@@ -80,8 +87,8 @@ void Map::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			const Tile& sourceTile = this->grid[source.x][source.y];
-			const Tile& neighborTile = this->grid[neighbor.x][neighbor.y];
+			Tile& sourceTile = this->grid[source.x][source.y];
+			Tile& neighborTile = this->grid[neighbor.x][neighbor.y];
 
 			if (this->grid[neighbor.x][neighbor.y].collapsed)
 			{
@@ -106,7 +113,7 @@ void Map::propagate(int x, int y, int& collapseCount)
 			else
 			{
 				std::unordered_set<int> validNeighbors;
-				std::vector<int> sourcePos = sourceTile.possibilities;
+				std::vector<int>& sourcePos = sourceTile.possibilities;
 				for (int type : sourcePos)
 				{
 					for (int neighbor : config.validNeighbors[type])
@@ -125,7 +132,7 @@ void Map::propagate(int x, int y, int& collapseCount)
 
 			if (neighborTile.possibilities.size() != originalSize)
 			{
-				if (neighborTile.possibilities.size() == 1)
+				if (neighborTile.possibilities.size() == 1 && !neighborTile.collapsed)
 				{
 					collapse(neighborTile.position.x, neighborTile.position.y, this->seed, collapseCount);
 					continue;
@@ -158,32 +165,28 @@ void Map::generate()
 		}
 	}
 	this->isReady = true;
+	postProcess();
 }
 
-std::vector<Tile> Map::postProcess()
+void Map::postProcess()
 {
 	if (this->isReady)
 	{
-		std::vector<Tile> tiles;
-		for (int i = 0; i < this->grid.size(); i++)
+		for (const auto& row : this->grid)
 		{
-			tiles.insert(tiles.end(), this->grid[i].begin(), this->grid[i].end());
+			this->finalTiles.insert(this->finalTiles.end(), row.begin(), row.end());
 		}
-		return tiles;
 	}
 }
 
 void Map::draw(SpriteRenderer& renderer)
 {
-	for (const Tile& tile : postProcess())
+	for (const Tile& tile : this->finalTiles)
 	{
-		std::string texPath = config.textures[tile.type];
-		ResourceManager::loadTexture(
-			("assets/" + texPath).c_str(),
-			false, 
-			config.textures[tile.type]);
-		Texture2D texture = ResourceManager::getTexture(texPath);
-		renderer.drawSprite(texture, tile.position);
+		Texture2D texture = ResourceManager::getTexture(tile.texture);
+		renderer.drawSprite(texture, tile.position, glm::vec2(this->HEIGHT, this->WIDTH));
 	}
 }
+
+
 

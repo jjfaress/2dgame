@@ -1,5 +1,6 @@
 #include "ConfigLoader.h"
 #include <iostream>
+#include "ResourceManager.h"
 
 ConfigLoader* ConfigLoader::instance = nullptr;
 

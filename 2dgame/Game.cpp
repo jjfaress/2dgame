@@ -9,7 +9,7 @@ SpriteRenderer* renderer;
 
 Map level(30, 30, static_cast<uint>(std::time(nullptr)));
 
-Game::Game(uint width, uint height)
+Game::Game(uint width, uint height) : WIDTH(width), HEIGHT(height)
 {
 }
 
@@ -33,6 +33,8 @@ void Game::init()
 void Game::render()
 {
 	level.draw(*renderer);
+
+	//renderer->drawSprite(ResourceManager::getTexture("beach.png"), glm::vec2(0.0f, 0.0f), glm::vec2(WIDTH/4, HEIGHT/4));
 }
 
 void Game::processInput()
