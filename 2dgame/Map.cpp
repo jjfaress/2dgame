@@ -1,5 +1,4 @@
 #include "Map.h"
-#include <queue>
 #include <unordered_set>
 #include <random>
 #include <iostream>
@@ -24,6 +23,7 @@ void Map::init()
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
 			row.emplace_back(Tile(glm::vec2(i, j), config.tileTypes));
+			this->eq.push({ config.tileTypes.size(), glm::vec2(i,j) });
 		}
 		this->grid.emplace_back(std::move(row));
 	}
@@ -34,7 +34,7 @@ void Map::init()
 	}
 }
 
-void Map::collapse(int x, int y, std::mt19937 rng, int& collapseCount)
+void Map::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].possibilities.empty())
@@ -45,6 +45,7 @@ void Map::collapse(int x, int y, std::mt19937 rng, int& collapseCount)
 	}
 
 	Tile& tile = this->grid[x][y];
+	this->eq.remove({ tile.possibilities.size(), tile.position });
 	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.possibilities.size() - 1);
 	tile.type = tile.possibilities[poss(rng)];
 	tile.texture = config.textures[tile.type].c_str();
@@ -95,19 +96,19 @@ void Map::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			std::vector<int>& neighborPos = neighborTile.possibilities;
-			size_t originalSize = neighborPos.size();
+			std::vector<int>& neighborPoss = neighborTile.possibilities;
+			size_t originalSize = neighborPoss.size();
 
 			if (sourceTile.collapsed)
 			{
 				std::unordered_set<int> validNeighbors = config.validNeighbors[sourceTile.type];
 
-				neighborPos.erase(
-					std::remove_if(neighborPos.begin(), neighborPos.end(),
+				neighborPoss.erase(
+					std::remove_if(neighborPoss.begin(), neighborPoss.end(),
 						[&validNeighbors](int type) {
 							return validNeighbors.find(type) == validNeighbors.end();
 						}),
-					neighborPos.end()
+					neighborPoss.end()
 				);
 			}
 			else
@@ -121,21 +122,22 @@ void Map::propagate(int x, int y, int& collapseCount)
 						validNeighbors.insert(neighbor);
 					}
 				}
-				neighborPos.erase(
-					std::remove_if(neighborPos.begin(), neighborPos.end(),
+				neighborPoss.erase(
+					std::remove_if(neighborPoss.begin(), neighborPoss.end(),
 						[&validNeighbors](int type) {
 							return validNeighbors.find(type) == validNeighbors.end();
 						}),
-					neighborPos.end()
+					neighborPoss.end()
 				);
 			}
 
-			if (neighborTile.possibilities.size() != originalSize)
+			if (neighborPoss.size() != originalSize)
 			{
-				if (neighborTile.possibilities.size() == 1 && !neighborTile.collapsed)
+				this->eq.remove({ originalSize, neighborTile.position });
+				this->eq.push({ neighborPoss.size(), neighborTile.position });
+				if (neighborPoss.size() == 1)
 				{
 					collapse(neighborTile.position.x, neighborTile.position.y, this->seed, collapseCount);
-					continue;
 				}
 				queue.push(glm::vec2(neighbor.x, neighbor.y));
 			}
@@ -148,20 +150,31 @@ void Map::generate()
 	std::mt19937 rng(this->seed);
 	std::uniform_int_distribution<std::mt19937::result_type> disX(0, this->WIDTH - 1);
 	std::uniform_int_distribution<std::mt19937::result_type> disY(0, this->HEIGHT - 1);
-	int cellsCollapsed = 0;
 
-	while (true)
+	int cellsCollapsed = 0;
+	const int totalCells = this->WIDTH * this->HEIGHT;
+
+	while (cellsCollapsed < totalCells)
 	{
-		int x = disX(rng);
-		int y = disY(rng);
-		if (cellsCollapsed == (this->WIDTH * this->HEIGHT))
+		glm::vec2 target;
+
+		if (!this->eq.empty())
 		{
-			break;
+			target = this->eq.top().second;
+			this->eq.pop();
 		}
-		if (!this->grid[x][y].collapsed)
+		else
 		{
-			collapse(x, y, rng, cellsCollapsed);
-			propagate(x, y, cellsCollapsed);
+			do
+			{
+				target = glm::vec2(disX(rng), disY(rng));
+			} while (this->grid[target.x][target.y].collapsed);
+		}
+
+		if (!this->grid[target.x][target.y].collapsed)
+		{
+			collapse(target.x, target.y, rng, cellsCollapsed);
+			propagate(target.x, target.y, cellsCollapsed);
 		}
 	}
 	this->isReady = true;
@@ -184,9 +197,6 @@ void Map::draw(SpriteRenderer& renderer)
 	for (const Tile& tile : this->finalTiles)
 	{
 		Texture2D texture = ResourceManager::getTexture(tile.texture);
-		renderer.drawSprite(texture, tile.position, glm::vec2(this->HEIGHT, this->WIDTH));
+		renderer.drawSprite(texture, tile.position * 32.0f, glm::vec2(32.0f, 32.0f));
 	}
 }
-
-
-

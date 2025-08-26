@@ -54,7 +54,6 @@ int main()
 		game.render();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
 	}
 	ResourceManager::clear();
 	glfwTerminate();
