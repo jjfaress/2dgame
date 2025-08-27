@@ -1,7 +1,7 @@
 #pragma once
 #ifndef GAME_H
 #define GAME_H
-#include "Map.h"
+#include "WFCMap.h"
 
 enum GameState {
 	GAME_ACTIVE,

@@ -7,7 +7,7 @@ ConfigLoader& config = ConfigLoader::getInstance("config.yaml");
 
 SpriteRenderer* renderer;
 
-Map level(100, 100, static_cast<uint>(std::time(nullptr)));
+WFCMap level(50, 50, static_cast<uint>(std::time(nullptr)));
 
 Game::Game(uint width, uint height) : WIDTH(width), HEIGHT(height)
 {

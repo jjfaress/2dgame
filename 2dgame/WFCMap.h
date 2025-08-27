@@ -28,19 +28,18 @@ public:
 
 	bool remove(const T& value)
 	{
-		auto it = std::find(this->c.begin(), this->c.end(), value);
+		auto item = std::find(this->c.begin(), this->c.end(), value);
 
-		if (it == this->c.end()) return false;
-		if (it == this->c.begin()) this->pop();
+		if (item == this->c.end()) return false;
+		if (item == this->c.begin()) this->pop();
 		else
 		{
-			this->c.erase(it);
+			this->c.erase(item);
 			std::make_heap(this->c.begin(), this->c.end(), this->comp);
 		}
 		return true;
 	}
 };
-
 
 struct Tile {
 	glm::vec2 position;
@@ -53,19 +52,19 @@ struct Tile {
 
 typedef std::vector<std::vector<Tile>> Grid;
 
-class Map {
+class WFCMap
+{
 public:
 	int WIDTH, HEIGHT;
 	Grid grid;
 	std::vector<Tile> finalTiles;
 	bool isReady;
-	Map(int width, int height, uint seed);
+	WFCMap(int width, int height, uint seed);
 	void generate();
 	void init();
 	void draw(SpriteRenderer& renderer);
 
 private:
-
 	uint seed;
 	ConfigLoader& config;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;
@@ -73,6 +72,5 @@ private:
 	void collapse(int x, int y, uint& seed, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
 	void postProcess();
-	glm::vec2 getLowestEntropy();
 };
 #endif

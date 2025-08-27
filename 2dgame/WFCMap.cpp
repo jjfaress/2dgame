@@ -1,10 +1,9 @@
-#include "Map.h"
+#include "WFCMap.h"
 #include <unordered_set>
-#include <random>
 #include <iostream>
 #include "ResourceManager.h"
 
-Map::Map(int width, int height, uint seed) :
+WFCMap::WFCMap(int width, int height, uint seed) :
 	WIDTH(width),
 	HEIGHT(height),
 	isReady(false),
@@ -13,7 +12,7 @@ Map::Map(int width, int height, uint seed) :
 {
 }
 
-void Map::init()
+void WFCMap::init()
 {
 	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
@@ -34,7 +33,7 @@ void Map::init()
 	}
 }
 
-void Map::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
+void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].possibilities.empty())
@@ -55,13 +54,13 @@ void Map::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 	tile.possibilities.shrink_to_fit();
 }
 
-void Map::collapse(int x, int y, uint& seed, int& collapseCount)
+void WFCMap::collapse(int x, int y, uint& seed, int& collapseCount)
 {
 	std::mt19937 rng(seed);
 	collapse(x, y, rng, collapseCount);
 }
 
-void Map::propagate(int x, int y, int& collapseCount)
+void WFCMap::propagate(int x, int y, int& collapseCount)
 {
 	std::queue<glm::ivec2> queue;
 	queue.push(glm::ivec2(x, y));
@@ -101,8 +100,8 @@ void Map::propagate(int x, int y, int& collapseCount)
 
 			if (sourceTile.collapsed)
 			{
-				std::unordered_set<int> validNeighbors = config.validNeighbors[sourceTile.type];
-
+				std::unordered_map<int, std::unordered_set<int>> validNeighborsMap = config.validNeighbors[sourceTile.type];
+				std::unordered_set<int> validNeighbors = validNeighborsMap[dir];
 				neighborPoss.erase(
 					std::remove_if(neighborPoss.begin(), neighborPoss.end(),
 						[&validNeighbors](int type) {
@@ -115,9 +114,11 @@ void Map::propagate(int x, int y, int& collapseCount)
 			{
 				std::unordered_set<int> validNeighbors;
 				std::vector<int>& sourcePos = sourceTile.possibilities;
-				for (int type : sourcePos)
+
+				for (const int type : sourcePos)
 				{
-					for (int neighbor : config.validNeighbors[type])
+					std::unordered_map<int, std::unordered_set<int>> neighborsMap = config.validNeighbors[type];
+					for (const auto& neighbor : neighborsMap[dir])
 					{
 						validNeighbors.insert(neighbor);
 					}
@@ -145,7 +146,7 @@ void Map::propagate(int x, int y, int& collapseCount)
 	}
 }
 
-void Map::generate()
+void WFCMap::generate()
 {
 	std::mt19937 rng(this->seed);
 	std::uniform_int_distribution<std::mt19937::result_type> disX(0, this->WIDTH - 1);
@@ -165,10 +166,10 @@ void Map::generate()
 		}
 		else
 		{
-			do
+			if (this->grid[target.x][target.y].collapsed)
 			{
 				target = glm::vec2(disX(rng), disY(rng));
-			} while (this->grid[target.x][target.y].collapsed);
+			}
 		}
 
 		if (!this->grid[target.x][target.y].collapsed)
@@ -181,7 +182,7 @@ void Map::generate()
 	postProcess();
 }
 
-void Map::postProcess()
+void WFCMap::postProcess()
 {
 	if (this->isReady)
 	{
@@ -192,7 +193,7 @@ void Map::postProcess()
 	}
 }
 
-void Map::draw(SpriteRenderer& renderer)
+void WFCMap::draw(SpriteRenderer& renderer)
 {
 	for (const Tile& tile : this->finalTiles)
 	{

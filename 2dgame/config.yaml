@@ -4,30 +4,26 @@ screen_heigh: 800
 map_width: 30
 map_height: 30
 
+bitmap: assets/island.png
+
 tile_data:
   0:
-    name: water
-    texture: water.png
-  1:
-    name: beach
+    name: tan
     texture: beach.png
-  2:
+    bitColor: [238, 195, 154, 255]
+  1:
     name: forrest
     texture: forrest.png
-  3:
-    name: grass
+    bitColor: [75, 105, 47, 255]
+  2:
+    name: green
     texture: grass.png
+    bitColor: [106, 190, 48, 255]
+  3:
+    name: teal
+    texture: water.png
+    bitColor: [95, 205, 228, 255]
   4:
-    name: desert
-    texture: desert.png
-  5:
-    name: mountains
-    texture: mountains.png
-
-valid_neighbors:
-  water: [water, beach]    
-  beach: [water, beach, grass]
-  forrest: [grass, forrest, mountains]
-  grass: [forrest, grass, beach]
-  desert: [mountains, desert]
-  mountains: [forrest, desert, mountains]
+   name: orange
+   texture: desert.png
+   bitColor: [223, 113, 38, 255]

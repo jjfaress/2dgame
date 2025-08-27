@@ -15,6 +15,7 @@ public:
 	static Texture2D loadTexture(const char* file, bool alpha, std::string name);
 	static Texture2D getTexture(std::string name);
 	static void clear();
+
 private:
 	ResourceManager() {}
 	static Shader loadShaderFromFile(const char* verTexSource, const char* fragmentSource);
