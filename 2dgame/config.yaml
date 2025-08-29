@@ -1,38 +1,38 @@
-bitmap: assets/room.png
-
-# tile_data:
-#   0:
-#     name: tan
-#     texture: beach.png
-#     bitColor: [238, 195, 154, 255]
-#   1:
-#     name: forrest
-#     texture: forrest.png
-#     bitColor: [75, 105, 47, 255]
-#   2:
-#     name: green
-#     texture: grass.png
-#     bitColor: [106, 190, 48, 255]
-#   3:
-#     name: teal
-#     texture: water.png
-#     bitColor: [95, 205, 228, 255]
-#   4:
-#    name: orange
-#    texture: desert.png
-#    bitColor: [223, 113, 38, 255]
-
+bitmap: assets/coast.png
 
 tile_data:
   0:
-    name: green
-    texture: grass.png
-    bitColor: [106, 190, 48, 255]
-  1:
-    name: teal
-    texture: water.png
-    bitColor: [95, 205, 228, 255]
-  2:
     name: tan
     texture: beach.png
     bitColor: [238, 195, 154, 255]
+  1:
+    name: forrest
+    texture: forrest.png
+    bitColor: [75, 105, 47, 255]
+  2:
+    name: green
+    texture: grass.png
+    bitColor: [106, 190, 48, 255]
+  3:
+    name: teal
+    texture: water.png
+    bitColor: [95, 205, 228, 255]
+  4:
+   name: orange
+   texture: desert.png
+   bitColor: [223, 113, 38, 255]
+
+
+# tile_data:
+#   0:
+#     name: green
+#     texture: grass.png
+#     bitColor: [106, 190, 48, 255]
+#   1:
+#     name: teal
+#     texture: water.png
+#     bitColor: [95, 205, 228, 255]
+#   2:
+#     name: tan
+#     texture: beach.png
+#     bitColor: [238, 195, 154, 255]

@@ -67,7 +67,8 @@ class ConfigLoader
 public:
 	std::vector<int> tileTypes;
 	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
-	umap<source, umap<direction, umap<neighbor, float>>> weights;
+	//umap<source, umap<direction, umap<neighbor, float>>> weights;
+	umap<int, float> overallWeights;
 
 	umap<int, std::string> textures;
 
@@ -77,7 +78,8 @@ public:
 	static ConfigLoader& getInstance(const char* path = nullptr);
 
 private:
-	umap<source, umap<direction, umap<neighbor, int>>> tileFrequency;
+	//umap<source, umap<direction, umap<neighbor, int>>> tileFrequency;
+	umap<source, int> freq;
 	std::unordered_map<glm::vec4, int, Vec4Hash> aliases;
 
 	static ConfigLoader* instance;

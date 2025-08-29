@@ -3,7 +3,6 @@
 #include <iostream>
 #include "ResourceManager.h"
 
-
 WFCMap::WFCMap(int width, int height, uint seed) :
 	WIDTH(width),
 	HEIGHT(height),
@@ -56,17 +55,6 @@ void WFCMap::init()
 
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
-	glm::ivec2 directions[] = {
-		glm::ivec2(0, 1), //north
-		glm::ivec2(1, 1), //north east
-		glm::ivec2(1, 0), //east
-		glm::ivec2(1, -1), //south east
-		glm::ivec2(0, -1), //south
-		glm::ivec2(-1, -1), //south west
-		glm::ivec2(-1, 0), //west
-		glm::ivec2(-1, 1) //north west
-	};
-
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
 	{
@@ -77,79 +65,35 @@ void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 	Tile& tile = this->grid[x][y];
 	this->eq.remove({ tile.entropy.size(), tile.position });
 
-	/// check if any neighbor tiles are collapsed
-	/// if any are, reverse the direction vector to get the weighted options for this position
-
-	if (!config.weights.empty())
+	if (!config.overallWeights.empty())
 	{
-		std::cout << "collapsing \n";
-
-		umap<int, float> aggWeights;
-
-		for (int i = 0; i < 8; i++)
+		std::vector<int> types;
+		std::vector<float> weights;
+		for (const auto& pair : config.overallWeights)
 		{
-			glm::ivec2 dir = directions[i];
-			glm::ivec2 neighborIdx(x + dir.x, y + dir.y);
-
-			if (neighborIdx.x < 0 || neighborIdx.x >= this->WIDTH ||
-				neighborIdx.y < 0 || neighborIdx.y >= this->HEIGHT)
+			if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
 			{
-				continue;
-			}
-
-			Tile& neighbor = this->grid[neighborIdx.x][neighborIdx.y];
-
-			if (neighbor.collapsed)
-			{
-				int revDirIdx = (i + 4) % 8;
-				const auto& weightMap = config.weights.find(neighbor.type);
-				if (weightMap != config.weights.end())
-				{
-					const auto& dirWeights = weightMap->second.find(revDirIdx);
-					if (dirWeights != weightMap->second.end())
-					{
-						std::vector<int> types;
-						std::vector<float> weights;
-
-						for (const auto& pair : dirWeights->second)
-						{
-							if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
-							{
-								types.push_back(pair.first);
-								weights.push_back(pair.second);
-							}
-						}
-
-						if (!types.empty())
-						{
-							std::discrete_distribution<int> dist(weights.begin(), weights.end());
-							int choice = dist(rng);
-							tile.type = types[choice];
-							break;
-							//todo get rid of break; use aggregate weights
-						}
-					}
-				}
+				types.push_back(pair.first);
+				weights.push_back(pair.second);
 			}
 		}
-		if (tile.type == NULL)
-		{
-			std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-			tile.type = tile.entropy[poss(rng)];
-		}
-
+		std::discrete_distribution<int> dist(weights.begin(), weights.end());
+		int choice = dist(rng);
+		tile.type = types[choice];
 	}
 	else
 	{
 		std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
 		tile.type = tile.entropy[poss(rng)];
 	}
+
 	tile.texture = config.textures[tile.type].c_str();
 	tile.collapsed = true;
 	collapseCount++;
 	tile.entropy.clear();
 	tile.entropy.shrink_to_fit();
 }
+
 
 void WFCMap::collapse(int x, int y, uint& seed, int& collapseCount)
 {
@@ -295,7 +239,12 @@ void WFCMap::draw(SpriteRenderer& renderer)
 {
 	for (const Tile& tile : this->finalTiles)
 	{
-		Texture2D texture = ResourceManager::getTexture(tile.texture);
-		renderer.drawSprite(texture, tile.position * 32.0f, glm::vec2(32.0f, 32.0f));
+		tile.draw(renderer);
 	}
+}
+
+
+void Tile::draw(SpriteRenderer& renderer) const
+{
+	renderer.drawSprite(ResourceManager::getTexture(this->texture), this->position * 32.0f, glm::vec2(32.0f, 32.0f));
 }

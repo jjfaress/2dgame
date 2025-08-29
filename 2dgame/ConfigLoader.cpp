@@ -37,6 +37,7 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 		glm::vec4 color = pair.second["bitColor"].as<glm::vec4>();
 		int id = pair.first.as<int>();
 		std::string texture = pair.second["texture"].as<std::string>();
+		this->overallWeights[id] = 1.0;
 		this->aliases[color] = id;
 		this->textures[id] = texture;
 		this->tileTypes.push_back(id);
@@ -63,6 +64,7 @@ void ConfigLoader::loadBitmap(const char* file)
 		std::cerr << "failed to load bitmap :: " << stbi_failure_reason() << std::endl;
 		return;
 	}
+
 
 	for (int y = 0; y < height; y++)
 	{
@@ -94,31 +96,22 @@ void ConfigLoader::loadBitmap(const char* file)
 				glm::vec4 neighborColor(r, g, b, a);
 				int neighbor = this->aliases[neighborColor];
 				this->validNeighbors[source][dir].insert(neighbor);
-				++this->tileFrequency[source][dir][neighbor];
+				//++this->tileFrequency[source][dir][neighbor];
+				
 			}
+			this->freq[source]++;
 		}
 	}
-	for (const auto& sourcePair : this->tileFrequency)
+
+	int totalTiles = 0;
+
+	for (const auto& pair : this->freq)
 	{
-		int source = sourcePair.first;
-		for (const auto& dirPair : sourcePair.second)
-		{
-			int dir = dirPair.first;
+		totalTiles += pair.second;
+	}
 
-			int totalNeighbors = 0;
-
-			for (const auto& neighborPair : dirPair.second)
-			{
-				totalNeighbors += neighborPair.second;
-			}
-
-			for (const auto& neighborPair : dirPair.second)
-			{
-				int neighbor = neighborPair.first;
-				int freq = neighborPair.second;
-				float weight = static_cast<float>(freq) / static_cast<float>(totalNeighbors);
-				this->weights[source][dir][neighbor] = weight;
-			}
-		}
+	for (const auto& pair : this->freq)
+	{
+		this->overallWeights[pair.first] = static_cast<float>(pair.second) / static_cast<float>(totalTiles);
 	}
 }

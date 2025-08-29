@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include <glm/glm.hpp>
 #include "SpriteRenderer.h"
+#include "GameObject.h"
 #include <queue>
 
 typedef unsigned int uint;
@@ -41,13 +42,14 @@ public:
 	}
 };
 
-struct Tile {
+struct Tile : GameObject {
 	glm::vec2 position;
 	std::vector<int> entropy;
 	bool collapsed = false;
 	int type = NULL;
 	const char* texture = nullptr;
 	Tile(glm::vec2 position, std::vector<int> poss) : position(position), entropy(poss) {}
+	void draw(SpriteRenderer& renderer) const;
 };
 
 typedef std::vector<std::vector<Tile>> Grid;
