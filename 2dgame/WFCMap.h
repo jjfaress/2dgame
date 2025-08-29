@@ -43,11 +43,11 @@ public:
 
 struct Tile {
 	glm::vec2 position;
-	std::vector<int> possibilities;
+	std::vector<int> entropy;
 	bool collapsed = false;
-	int type;
+	int type = NULL;
 	const char* texture = nullptr;
-	Tile(glm::vec2 position, std::vector<int>& poss) : position(position), possibilities(poss) {}
+	Tile(glm::vec2 position, std::vector<int> poss) : position(position), entropy(poss) {}
 };
 
 typedef std::vector<std::vector<Tile>> Grid;

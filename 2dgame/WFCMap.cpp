@@ -3,6 +3,7 @@
 #include <iostream>
 #include "ResourceManager.h"
 
+
 WFCMap::WFCMap(int width, int height, uint seed) :
 	WIDTH(width),
 	HEIGHT(height),
@@ -33,25 +34,121 @@ void WFCMap::init()
 	}
 }
 
+//void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
+//{
+//	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
+//		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
+//	{
+//		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
+//		return;
+//	}
+//
+//	Tile& tile = this->grid[x][y];
+//	this->eq.remove({ tile.entropy.size(), tile.position });
+//	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
+//	tile.type = tile.entropy[poss(rng)];
+//	tile.texture = config.textures[tile.type].c_str();
+//	tile.collapsed = true;
+//	collapseCount++;
+//	tile.entropy.clear();
+//	tile.entropy.shrink_to_fit();
+//}
+
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
+	glm::ivec2 directions[] = {
+		glm::ivec2(0, 1), //north
+		glm::ivec2(1, 1), //north east
+		glm::ivec2(1, 0), //east
+		glm::ivec2(1, -1), //south east
+		glm::ivec2(0, -1), //south
+		glm::ivec2(-1, -1), //south west
+		glm::ivec2(-1, 0), //west
+		glm::ivec2(-1, 1) //north west
+	};
+
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
-		this->grid[x][y].collapsed || this->grid[x][y].possibilities.empty())
+		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
 	{
-		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n";
-		throw std::runtime_error("error collapsing");
+		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
 		return;
 	}
 
 	Tile& tile = this->grid[x][y];
-	this->eq.remove({ tile.possibilities.size(), tile.position });
-	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.possibilities.size() - 1);
-	tile.type = tile.possibilities[poss(rng)];
+	this->eq.remove({ tile.entropy.size(), tile.position });
+
+	/// check if any neighbor tiles are collapsed
+	/// if any are, reverse the direction vector to get the weighted options for this position
+
+	if (!config.weights.empty())
+	{
+		std::cout << "collapsing \n";
+
+		umap<int, float> aggWeights;
+
+		for (int i = 0; i < 8; i++)
+		{
+			glm::ivec2 dir = directions[i];
+			glm::ivec2 neighborIdx(x + dir.x, y + dir.y);
+
+			if (neighborIdx.x < 0 || neighborIdx.x >= this->WIDTH ||
+				neighborIdx.y < 0 || neighborIdx.y >= this->HEIGHT)
+			{
+				continue;
+			}
+
+			Tile& neighbor = this->grid[neighborIdx.x][neighborIdx.y];
+
+			if (neighbor.collapsed)
+			{
+				int revDirIdx = (i + 4) % 8;
+				const auto& weightMap = config.weights.find(neighbor.type);
+				if (weightMap != config.weights.end())
+				{
+					const auto& dirWeights = weightMap->second.find(revDirIdx);
+					if (dirWeights != weightMap->second.end())
+					{
+						std::vector<int> types;
+						std::vector<float> weights;
+
+						for (const auto& pair : dirWeights->second)
+						{
+							if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
+							{
+								types.push_back(pair.first);
+								weights.push_back(pair.second);
+							}
+						}
+
+						if (!types.empty())
+						{
+							std::discrete_distribution<int> dist(weights.begin(), weights.end());
+							int choice = dist(rng);
+							tile.type = types[choice];
+							break;
+							//todo get rid of break; use aggregate weights
+						}
+					}
+				}
+			}
+		}
+		if (tile.type == NULL)
+		{
+			std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
+			tile.type = tile.entropy[poss(rng)];
+		}
+
+	}
+	else
+	{
+		std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
+		tile.type = tile.entropy[poss(rng)];
+	}
 	tile.texture = config.textures[tile.type].c_str();
 	tile.collapsed = true;
 	collapseCount++;
-	tile.possibilities.clear();
-	tile.possibilities.shrink_to_fit();
+	tile.entropy.clear();
+	tile.entropy.shrink_to_fit();
 }
 
 void WFCMap::collapse(int x, int y, uint& seed, int& collapseCount)
@@ -67,9 +164,13 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 
 	glm::ivec2 directions[] = {
 		glm::ivec2(0, 1), //north
-		glm::ivec2(1, 0), // east
-		glm::ivec2(0, -1), // south
-		glm::ivec2(-1, 0) // west
+		glm::ivec2(1, 1), //north east
+		glm::ivec2(1, 0), //east
+		glm::ivec2(1, -1), //south east
+		glm::ivec2(0, -1), //south
+		glm::ivec2(-1, -1), //south west
+		glm::ivec2(-1, 0), //west
+		glm::ivec2(-1, 1) //north west
 	};
 
 	while (!queue.empty())
@@ -77,7 +178,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 		glm::ivec2 source = queue.front();
 		queue.pop();
 
-		for (int dir = 0; dir < 4; dir++)
+		for (int dir = 0; dir < 8; dir++)
 		{
 			glm::vec2 neighbor = source + directions[dir];
 
@@ -95,7 +196,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			std::vector<int>& neighborPoss = neighborTile.possibilities;
+			std::vector<int>& neighborPoss = neighborTile.entropy;
 			size_t originalSize = neighborPoss.size();
 
 			if (sourceTile.collapsed)
@@ -113,7 +214,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 			else
 			{
 				std::unordered_set<int> validNeighbors;
-				std::vector<int>& sourcePos = sourceTile.possibilities;
+				std::vector<int>& sourcePos = sourceTile.entropy;
 
 				for (const int type : sourcePos)
 				{
@@ -166,10 +267,7 @@ void WFCMap::generate()
 		}
 		else
 		{
-			if (this->grid[target.x][target.y].collapsed)
-			{
-				target = glm::vec2(disX(rng), disY(rng));
-			}
+			target = glm::vec2(disX(rng), disY(rng));
 		}
 
 		if (!this->grid[target.x][target.y].collapsed)

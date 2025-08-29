@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
+
 namespace YAML {
 	template<>
 	struct convert<glm::vec4> {
@@ -55,13 +56,20 @@ struct Vec4Eq {
 	}
 };
 
+template <typename T, typename V>
+using umap = std::unordered_map<T, V>;
+using direction = int;
+using source = int;
+using neighbor = int;
+
 class ConfigLoader
 {
 public:
 	std::vector<int> tileTypes;
-	std::unordered_map<int, std::unordered_map<int, std::unordered_set<int>>> validNeighbors;
-	std::unordered_map<glm::vec4, int, Vec4Hash, Vec4Eq> aliases;
-	std::unordered_map<int, std::string> textures;
+	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
+	umap<source, umap<direction, umap<neighbor, float>>> weights;
+
+	umap<int, std::string> textures;
 
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
@@ -69,6 +77,9 @@ public:
 	static ConfigLoader& getInstance(const char* path = nullptr);
 
 private:
+	umap<source, umap<direction, umap<neighbor, int>>> tileFrequency;
+	std::unordered_map<glm::vec4, int, Vec4Hash> aliases;
+
 	static ConfigLoader* instance;
 	ConfigLoader(const char* path);
 	void loadTileData(const YAML::Node& node);
