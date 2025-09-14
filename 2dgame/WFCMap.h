@@ -41,13 +41,14 @@ public:
 	}
 };
 
-struct WFCTile : GameObject {
-	glm::vec2 position;
+struct WFCTile : public Tile {
 	std::vector<int> entropy;
 	bool collapsed = false;
 	int type = NULL;
 	const char* texture = nullptr;
-	WFCTile(glm::vec2 position, std::vector<int> poss) : position(position), entropy(poss) {}
+	WFCTile(glm::vec2 position, std::vector<int> poss) : 
+		Tile(position),
+		entropy(poss) {}
 	void draw(SpriteRenderer& renderer);
 };
 
@@ -56,6 +57,7 @@ class WFCMap : public Map<WFCTile>
 public:
 	bool isReady;
 	WFCMap(int width, int height, unsigned int seed);
+	~WFCMap() override;
 	void generate();
 	void init() override;
 	void draw(SpriteRenderer& renderer);
@@ -68,8 +70,6 @@ private:
 	void collapse(int x, int y, std::mt19937& rng, int& collapseCount);
 	void collapse(int x, int y, unsigned int& seed, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
-
-protected:
 	void postProcess() override;
 };
 #endif

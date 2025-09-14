@@ -3,16 +3,16 @@
 #define PERLIN_H
 #include "Map.h"
 
-class PerlinMap {
+struct PerlinTile : public Tile {
+	glm::vec2 position;
+};
+
+class PerlinMap : public Map<PerlinTile> {
 public:
-	int WIDTH, HEIGHT;
 	PerlinMap(int width, int height);
 	void generate();
 
-
 private:
-	struct Tile {
-		double fertility;
-	};
+
 };
 #endif

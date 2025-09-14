@@ -3,8 +3,7 @@
 #include "noiseutils.h"
 
 PerlinMap::PerlinMap(int width, int height) :
-	WIDTH(width),
-	HEIGHT(height)
+	Map(width, height)
 {
 }
 
@@ -18,6 +17,5 @@ void PerlinMap::generate()
 	builder.SetDestSize(this->WIDTH, this->HEIGHT);
 	builder.SetBounds(0.0, 1.0, 0.0, 1.0);
 	builder.Build();
-
 
 }

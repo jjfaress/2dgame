@@ -14,12 +14,12 @@ GameObject::GameObject() :
 }
 
 GameObject::GameObject(glm::vec2 position, glm::vec2 size, Texture2D sprite, glm::vec3 color, glm::vec2 velocity) :
-	position(0.0f, 0.0f),
-	size(1.0f, 1.0f),
-	velocity(0.0f),
-	color(1.0f),
+	position(position),
+	size(size),
+	velocity(velocity),
+	color(color),
 	rotation(0.0f),
-	sprite(),
+	sprite(sprite),
 	isSolid(false),
 	destroyed(false)
 {

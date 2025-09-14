@@ -11,6 +11,10 @@ WFCMap::WFCMap(int width, int height, unsigned int seed) :
 {	
 }
 
+WFCMap::~WFCMap() noexcept
+{
+}
+
 void WFCMap::init()
 {
 	this->grid.reserve(this->WIDTH);
