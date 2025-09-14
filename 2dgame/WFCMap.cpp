@@ -3,13 +3,12 @@
 #include <iostream>
 #include "ResourceManager.h"
 
-WFCMap::WFCMap(int width, int height, uint seed) :
-	WIDTH(width),
-	HEIGHT(height),
-	isReady(false),
+WFCMap::WFCMap(int width, int height, unsigned int seed) :
+	Map(width, height),
 	seed(seed),
+	isReady(false),
 	config(ConfigLoader::getInstance())
-{
+{	
 }
 
 void WFCMap::init()
@@ -17,11 +16,11 @@ void WFCMap::init()
 	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
 	{
-		std::vector<Tile> row;
+		std::vector<WFCTile> row;
 		row.reserve(this->HEIGHT);
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
-			row.emplace_back(Tile(glm::vec2(i, j), config.tileTypes));
+			row.emplace_back(WFCTile(glm::vec2(i, j), config.tileTypes));
 			this->eq.push({ config.tileTypes.size(), glm::vec2(i,j) });
 		}
 		this->grid.emplace_back(std::move(row));
@@ -33,26 +32,6 @@ void WFCMap::init()
 	}
 }
 
-//void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
-//{
-//	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
-//		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
-//	{
-//		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
-//		return;
-//	}
-//
-//	Tile& tile = this->grid[x][y];
-//	this->eq.remove({ tile.entropy.size(), tile.position });
-//	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-//	tile.type = tile.entropy[poss(rng)];
-//	tile.texture = config.textures[tile.type].c_str();
-//	tile.collapsed = true;
-//	collapseCount++;
-//	tile.entropy.clear();
-//	tile.entropy.shrink_to_fit();
-//}
-
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
@@ -62,31 +41,10 @@ void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 		return;
 	}
 
-	Tile& tile = this->grid[x][y];
+	WFCTile& tile = this->grid[x][y];
 	this->eq.remove({ tile.entropy.size(), tile.position });
-
-	if (!config.overallWeights.empty())
-	{
-		std::vector<int> types;
-		std::vector<float> weights;
-		for (const auto& pair : config.overallWeights)
-		{
-			if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
-			{
-				types.push_back(pair.first);
-				weights.push_back(pair.second);
-			}
-		}
-		std::discrete_distribution<int> dist(weights.begin(), weights.end());
-		int choice = dist(rng);
-		tile.type = types[choice];
-	}
-	else
-	{
-		std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-		tile.type = tile.entropy[poss(rng)];
-	}
-
+	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
+	tile.type = tile.entropy[poss(rng)];
 	tile.texture = config.textures[tile.type].c_str();
 	tile.collapsed = true;
 	collapseCount++;
@@ -94,8 +52,49 @@ void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 	tile.entropy.shrink_to_fit();
 }
 
+//void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
+//{
+//	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
+//		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
+//	{
+//		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
+//		return;
+//	}
+//
+//	WFCTile& tile = this->grid[x][y];
+//	this->eq.remove({ tile.entropy.size(), tile.position });
+//
+//	if (!config.overallWeights.empty())
+//	{
+//		std::vector<int> types;
+//		std::vector<float> weights;
+//		for (const auto& pair : config.overallWeights)
+//		{
+//			if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
+//			{
+//				types.push_back(pair.first);
+//				weights.push_back(pair.second);
+//			}
+//		}
+//		std::discrete_distribution<int> dist(weights.begin(), weights.end());
+//		int choice = dist(rng);
+//		tile.type = types[choice];
+//	}
+//	else
+//	{
+//		std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
+//		tile.type = tile.entropy[poss(rng)];
+//	}
+//
+//	tile.texture = config.textures[tile.type].c_str();
+//	tile.collapsed = true;
+//	collapseCount++;
+//	tile.entropy.clear();
+//	tile.entropy.shrink_to_fit();
+//}
 
-void WFCMap::collapse(int x, int y, uint& seed, int& collapseCount)
+
+void WFCMap::collapse(int x, int y, unsigned int& seed, int& collapseCount)
 {
 	std::mt19937 rng(seed);
 	collapse(x, y, rng, collapseCount);
@@ -132,8 +131,8 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			Tile& sourceTile = this->grid[source.x][source.y];
-			Tile& neighborTile = this->grid[neighbor.x][neighbor.y];
+			WFCTile& sourceTile = this->grid[source.x][source.y];
+			WFCTile& neighborTile = this->grid[neighbor.x][neighbor.y];
 
 			if (this->grid[neighbor.x][neighbor.y].collapsed)
 			{
@@ -237,14 +236,15 @@ void WFCMap::postProcess()
 
 void WFCMap::draw(SpriteRenderer& renderer)
 {
-	for (const Tile& tile : this->finalTiles)
+	for (WFCTile& tile : this->finalTiles)
 	{
 		tile.draw(renderer);
 	}
 }
 
 
-void Tile::draw(SpriteRenderer& renderer) const
+void WFCTile::draw(SpriteRenderer& renderer)
 {
-	renderer.drawSprite(ResourceManager::getTexture(this->texture), this->position * 32.0f, glm::vec2(32.0f, 32.0f));
+	float tileSize = 16.0;
+	renderer.drawSprite(ResourceManager::getTexture(this->texture), this->position * tileSize, glm::vec2(tileSize));
 }

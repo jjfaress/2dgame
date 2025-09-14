@@ -1,4 +1,4 @@
-bitmap: assets/coast.png
+bitmap: assets/coast3.png
 
 tile_data:
   0:
@@ -17,10 +17,10 @@ tile_data:
     name: teal
     texture: water.png
     bitColor: [95, 205, 228, 255]
-  4:
-   name: orange
-   texture: desert.png
-   bitColor: [223, 113, 38, 255]
+  # 4:
+  #  name: orange
+  #  texture: desert.png
+  #  bitColor: [223, 113, 38, 255]
 
 
 # tile_data:

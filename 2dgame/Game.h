@@ -3,6 +3,8 @@
 #define GAME_H
 #include "WFCMap.h"
 
+using uint = unsigned int;
+
 enum GameState {
 	GAME_ACTIVE,
 	GAME_MENU,
@@ -14,7 +16,6 @@ public:
 	GameState State;
 	bool Keys[1024];
 	uint WIDTH, HEIGHT;
-	Grid* grid;
 
 	Game(uint width, uint height);
 	~Game();
