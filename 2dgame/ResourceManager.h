@@ -1,6 +1,4 @@
 #pragma once
-#ifndef RESRC_MNGR_H
-#define RESRC_MNGR_H
 #include "Shader.h"
 #include "Texture.h"
 #include <map>
@@ -21,4 +19,3 @@ private:
 	static Shader loadShaderFromFile(const char* verTexSource, const char* fragmentSource);
 	static Texture2D loadTextureFromFile(const char* file, bool alpha);
 };
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef WFCMAP_H
-#define WFCMAP_H
 #include "Map.h"
 #include <vector>
 #include "ConfigLoader.h"
@@ -25,7 +23,6 @@ struct EntropyQueue : public std::priority_queue<T, Container, Comp>
 public:
 	using Base = std::priority_queue<T, Container, Comp>;
 	using Base::Base;
-
 	bool remove(const T& value)
 	{
 		auto item = std::find(this->c.begin(), this->c.end(), value);
@@ -45,7 +42,6 @@ struct WFCTile : public Tile {
 	std::vector<int> entropy;
 	bool collapsed = false;
 	int type = NULL;
-	const char* texture = nullptr;
 	WFCTile(glm::vec2 position, std::vector<int> poss) : 
 		Tile(position),
 		entropy(poss) {}
@@ -55,8 +51,12 @@ struct WFCTile : public Tile {
 class WFCMap : public Map<WFCTile>
 {
 public:
+	bool initialized = false;
 	bool isReady;
-	WFCMap(int width, int height, unsigned int seed);
+	WFCMap(int width, 
+		int height, 
+		unsigned int seed, 
+		const char* path = nullptr);
 	~WFCMap() override;
 	void generate();
 	void init() override;
@@ -65,11 +65,9 @@ public:
 private:
 	std::vector<WFCTile> finalTiles;
 	unsigned int seed;
-	ConfigLoader& config;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;
 	void collapse(int x, int y, std::mt19937& rng, int& collapseCount);
 	void collapse(int x, int y, unsigned int& seed, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
 	void postProcess() override;
 };
-#endif

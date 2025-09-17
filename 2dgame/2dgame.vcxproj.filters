@@ -56,6 +56,9 @@
     <ClCompile Include="PerlinMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PixelRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -94,6 +97,9 @@
     <ClInclude Include="PerlinMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PixelRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="spriteShader.vert">
@@ -105,5 +111,6 @@
     <None Include="config.yaml">
       <Filter>config</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

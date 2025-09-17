@@ -37,7 +37,6 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 		glm::vec4 color = pair.second["bitColor"].as<glm::vec4>();
 		int id = pair.first.as<int>();
 		std::string texture = pair.second["texture"].as<std::string>();
-		this->overallWeights[id] = 1.0;
 		this->aliases[color] = id;
 		this->textures[id] = texture;
 		this->tileTypes.push_back(id);
@@ -95,23 +94,8 @@ void ConfigLoader::loadBitmap(const char* file)
 				unsigned char a = data[neighborIdx + 3];
 				glm::vec4 neighborColor(r, g, b, a);
 				int neighbor = this->aliases[neighborColor];
-				this->validNeighbors[source][dir].insert(neighbor);
-				//++this->tileFrequency[source][dir][neighbor];
-				
+				this->validNeighbors[source][dir].insert(neighbor);				
 			}
-			this->freq[source]++;
 		}
-	}
-
-	int totalTiles = 0;
-
-	for (const auto& pair : this->freq)
-	{
-		totalTiles += pair.second;
-	}
-
-	for (const auto& pair : this->freq)
-	{
-		this->overallWeights[pair.first] = static_cast<float>(pair.second) / static_cast<float>(totalTiles);
 	}
 }

@@ -1,10 +1,7 @@
 #pragma once
-#ifndef SHADER_H
-#define SHADER_H
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 
 class Shader {
 public:
@@ -18,4 +15,3 @@ public:
 private:
 	void checkCompileErrors(unsigned int object, std::string type) const;
 };
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 #define GLM_ENABLE_EXPERIMENTAL
-#ifndef CONFIG_LOADER_H
-#define CONFIG_LOADER_H
 #include <unordered_map>
 #include <yaml-cpp/yaml.h>
 #include <unordered_set>
@@ -9,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
+template<typename T>
+using Grid = std::vector<std::vector<T>>;
 
 namespace YAML {
 	template<>
@@ -56,8 +56,49 @@ struct Vec4Eq {
 	}
 };
 
+struct Pattern {
+	Grid<int> tiles;
+	int frequency;
+	size_t hash;
+	int idx;
+
+	Pattern(const Grid<int>& pattern) :
+		tiles(pattern),
+		frequency(1), idx(-1)
+	{
+		hash = getHash();
+	}
+
+	bool operator == (const Pattern& other) const
+	{
+		return tiles == other.tiles;
+	}
+
+private:
+	size_t getHash() const
+	{
+		size_t h = 0;
+		for (const auto& row : tiles)
+		{
+			for (const int tile : row)
+			{
+				h ^= std::hash<int>{}(tile)+0x9e3779b9 + (h << 6) + (h >> 2);
+			}
+		}
+		return h;
+	}
+};
+
+struct PatternHash {
+	size_t operator()(const Pattern& p) const
+	{
+		return p.hash;
+	}
+};
+
 template <typename T, typename V>
 using umap = std::unordered_map<T, V>;
+
 using direction = int;
 using source = int;
 using neighbor = int;
@@ -67,18 +108,22 @@ class ConfigLoader
 public:
 	std::vector<int> tileTypes;
 	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
-	//umap<source, umap<direction, umap<neighbor, float>>> weights;
-	umap<int, float> overallWeights;
-
 	umap<int, std::string> textures;
+
+	std::vector<Pattern> patterns;
+	Grid<std::vector<int>> patternRules;
+	//Grid<int> bitmap;
+
+	int patternSize = 3;
+	bool perInput = true;
+
 
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
 
 	static ConfigLoader& getInstance(const char* path = nullptr);
 
-private:
-	//umap<source, umap<direction, umap<neighbor, int>>> tileFrequency;
+protected:
 	umap<source, int> freq;
 	std::unordered_map<glm::vec4, int, Vec4Hash> aliases;
 
@@ -86,5 +131,9 @@ private:
 	ConfigLoader(const char* path);
 	void loadTileData(const YAML::Node& node);
 	void loadBitmap(const char* file);
+
+	void extractPatterns();
+	Pattern getPattern(int x, int y) const;
+	void getValidNeighbors();
+
 };
-#endif

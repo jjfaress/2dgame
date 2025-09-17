@@ -2,16 +2,16 @@
 #include <unordered_set>
 #include <iostream>
 #include "ResourceManager.h"
+#include <omp.h>
 
-WFCMap::WFCMap(int width, int height, unsigned int seed) :
-	Map(width, height),
+WFCMap::WFCMap(int width, int height, unsigned int seed, const char* path) :
+	Map(width, height, path ? ConfigLoader::getInstance(path) : ConfigLoader::getInstance()),
 	seed(seed),
-	isReady(false),
-	config(ConfigLoader::getInstance())
-{	
+	isReady(false)
+{
 }
 
-WFCMap::~WFCMap() noexcept
+WFCMap::~WFCMap()
 {
 }
 
@@ -20,20 +20,21 @@ void WFCMap::init()
 	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
 	{
-		std::vector<WFCTile> row;
-		row.reserve(this->HEIGHT);
+		std::vector<WFCTile> col;
+		col.reserve(this->HEIGHT);
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
-			row.emplace_back(WFCTile(glm::vec2(i, j), config.tileTypes));
+			col.emplace_back(WFCTile(glm::vec2(i, j), config.tileTypes));
 			this->eq.push({ config.tileTypes.size(), glm::vec2(i,j) });
 		}
-		this->grid.emplace_back(std::move(row));
+		this->grid.emplace_back(std::move(col));
 	}
 
 	for (const auto& type : config.tileTypes)
 	{
 		ResourceManager::loadTexture(("assets/" + config.textures[type]).c_str(), false, config.textures[type]);
 	}
+	this->initialized = true;
 }
 
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
@@ -55,48 +56,6 @@ void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 	tile.entropy.clear();
 	tile.entropy.shrink_to_fit();
 }
-
-//void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
-//{
-//	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
-//		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
-//	{
-//		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
-//		return;
-//	}
-//
-//	WFCTile& tile = this->grid[x][y];
-//	this->eq.remove({ tile.entropy.size(), tile.position });
-//
-//	if (!config.overallWeights.empty())
-//	{
-//		std::vector<int> types;
-//		std::vector<float> weights;
-//		for (const auto& pair : config.overallWeights)
-//		{
-//			if (std::find(tile.entropy.begin(), tile.entropy.end(), pair.first) != tile.entropy.end())
-//			{
-//				types.push_back(pair.first);
-//				weights.push_back(pair.second);
-//			}
-//		}
-//		std::discrete_distribution<int> dist(weights.begin(), weights.end());
-//		int choice = dist(rng);
-//		tile.type = types[choice];
-//	}
-//	else
-//	{
-//		std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-//		tile.type = tile.entropy[poss(rng)];
-//	}
-//
-//	tile.texture = config.textures[tile.type].c_str();
-//	tile.collapsed = true;
-//	collapseCount++;
-//	tile.entropy.clear();
-//	tile.entropy.shrink_to_fit();
-//}
-
 
 void WFCMap::collapse(int x, int y, unsigned int& seed, int& collapseCount)
 {
@@ -125,9 +84,18 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 		glm::ivec2 source = queue.front();
 		queue.pop();
 
+		struct Update {
+			glm::ivec2 position;
+			std::vector<int> newEntropy;
+			size_t originalEntropy;
+		};
+		std::vector<Update> updates;
+		updates.reserve(8);
+
+		#pragma omp parallel for
 		for (int dir = 0; dir < 8; dir++)
 		{
-			glm::vec2 neighbor = source + directions[dir];
+			glm::ivec2 neighbor = source + directions[dir];
 
 			if (neighbor.x < 0 || neighbor.x >= this->WIDTH ||
 				neighbor.y < 0 || neighbor.y >= this->HEIGHT)
@@ -143,8 +111,8 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			std::vector<int>& neighborPoss = neighborTile.entropy;
-			size_t originalSize = neighborPoss.size();
+			std::vector<int> neighborPoss = neighborTile.entropy;
+			size_t originalEntropy = neighborPoss.size();
 
 			if (sourceTile.collapsed)
 			{
@@ -180,15 +148,29 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				);
 			}
 
-			if (neighborPoss.size() != originalSize)
+			if (neighborPoss.size() != originalEntropy)
 			{
-				this->eq.remove({ originalSize, neighborTile.position });
-				this->eq.push({ neighborPoss.size(), neighborTile.position });
-				if (neighborPoss.size() == 1)
+				#pragma omp critical
 				{
-					collapse(neighborTile.position.x, neighborTile.position.y, this->seed, collapseCount);
+					updates.push_back({ neighbor, std::move(neighborPoss), originalEntropy });
 				}
-				queue.push(glm::vec2(neighbor.x, neighbor.y));
+			}
+		}
+
+		for (const Update& update : updates)
+		{
+			WFCTile& neighbor = this->grid[update.position.x][update.position.y];
+			if (!neighbor.collapsed && neighbor.entropy.size() == update.originalEntropy)
+			{
+				this->eq.remove({ update.originalEntropy, neighbor.position });
+				neighbor.entropy = update.newEntropy;
+				this->eq.push({ neighbor.entropy.size(), neighbor.position });
+
+				if (neighbor.entropy.size() == 1)
+				{
+					collapse(neighbor.position.x, neighbor.position.y, this->seed, collapseCount);
+				}
+				queue.push(update.position);
 			}
 		}
 	}

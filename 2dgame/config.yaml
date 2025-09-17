@@ -1,38 +1,63 @@
-bitmap: assets/coast3.png
+bitmap: assets/coast4.png
 
 tile_data:
-  0:
-    name: tan
-    texture: beach.png
-    bitColor: [238, 195, 154, 255]
-  1:
+  # 0:
+  #   name: beachN
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 1:
+  #   name: beachNe
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 2:
+  #   name: beachE
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 3:
+  #   name: beachSe
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 4:
+  #   name: beachS
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 5:
+  #   name: beachSw
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 6:
+  #   name: beachW
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  # 7:
+  #   name: beachNw
+  #   texture: beach-n.png
+  #   bitColor: [238, 195, 154, 255]
+
+  8:
     name: forrest
     texture: forrest.png
     bitColor: [75, 105, 47, 255]
-  2:
+
+  9:
     name: green
     texture: grass.png
     bitColor: [106, 190, 48, 255]
-  3:
+
+  10:
     name: teal
     texture: water.png
     bitColor: [95, 205, 228, 255]
-  # 4:
-  #  name: orange
-  #  texture: desert.png
-  #  bitColor: [223, 113, 38, 255]
 
-
-# tile_data:
-#   0:
-#     name: green
-#     texture: grass.png
-#     bitColor: [106, 190, 48, 255]
-#   1:
-#     name: teal
-#     texture: water.png
-#     bitColor: [95, 205, 228, 255]
-#   2:
-#     name: tan
-#     texture: beach.png
-#     bitColor: [238, 195, 154, 255]
+  11:
+    name: tan
+    texture: beach.png
+    bitColor: [238, 195, 154, 255]
+    

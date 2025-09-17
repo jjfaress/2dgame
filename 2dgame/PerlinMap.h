@@ -1,6 +1,4 @@
 #pragma once
-#ifndef PERLIN_H
-#define PERLIN_H
 #include "Map.h"
 
 struct PerlinTile : public Tile {
@@ -15,4 +13,3 @@ public:
 private:
 
 };
-#endif
