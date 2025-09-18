@@ -1,6 +1,4 @@
 #pragma once
-#ifndef TEXTURE_H
-#define TEXTURE_H
 
 class Texture2D {
 public:
@@ -15,4 +13,3 @@ public:
 	void generate(unsigned int width, unsigned int height, unsigned char* data);
 	void bind() const;
 };
-#endif

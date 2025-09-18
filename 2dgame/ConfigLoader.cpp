@@ -37,15 +37,16 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 		glm::vec4 color = pair.second["bitColor"].as<glm::vec4>();
 		int id = pair.first.as<int>();
 		std::string texture = pair.second["texture"].as<std::string>();
-		this->aliases[color] = id;
+		this->colors[color] = id;
 		this->textures[id] = texture;
 		this->tileTypes.push_back(id);
 	}
 }
 
+
 void ConfigLoader::loadBitmap(const char* file)
 {
-	glm::ivec2 directions[] = {
+	static glm::ivec2 directions[] = {
 		glm::ivec2(0, 1), //north
 		glm::ivec2(1, 1), //north east
 		glm::ivec2(1, 0), //east
@@ -56,46 +57,188 @@ void ConfigLoader::loadBitmap(const char* file)
 		glm::ivec2(-1, 1) //north west
 	};
 
+
 	int width, height, channels;
 	unsigned char* data = stbi_load(file, &width, &height, &channels, 0);
 	if (!data)
 	{
-		std::cerr << "failed to load bitmap :: " << stbi_failure_reason() << std::endl;
+		std::cerr << "Failed to load bitmap: " << stbi_failure_reason() << std::endl;
 		return;
 	}
 
+	Grid<int> bitmap(height, std::vector<int>(width));
 
-	for (int y = 0; y < height; y++)
+	int patternCount = 0;
+
+	for (int x = 0; x < width; x++)
 	{
-		for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
 		{
-			int sourceIdx = (y * width + x) * channels;  // images are stored as 1d arrays in memory
-			unsigned char r = data[sourceIdx];
-			unsigned char g = data[sourceIdx + 1];
-			unsigned char b = data[sourceIdx + 2];
-			unsigned char a = data[sourceIdx + 3];
-			glm::vec4 sourceColor(r, g, b, a);
-			int source = this->aliases[sourceColor];
+			int idx = (y * width + x) * channels;
+			unsigned char r = data[idx];
+			unsigned char g = data[idx + 1];
+			unsigned char b = data[idx + 2];
+			unsigned char a = data[idx + 3];
+			glm::vec4 color(r, g, b, a);
+			bitmap[x][y] = this->colors[color];
+		}
+	}
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			Pattern source = extractPattern(bitmap, x, y);
+			if (patternIsUnique(source))
+			{
+				source.id = patternCount++;
+				this->aliases[source] = source.id;
+				this->patterns[source.id] = source;
+				this->patternTypes.push_back(source.id);
+				//std::cout << patternTypes.size()<<"\n";
+			}
+			else
+			{
+				this->patterns[source.id].frequency++;
+			}
+
 			for (int dir = 0; dir < 8; dir++)
 			{
 				glm::ivec2 direction = directions[dir];
-				int neighborX = x + direction.x;
-				int neighborY = y + direction.y;
+				glm::ivec2 stride = direction + glm::ivec2(this->n);
 
-				if (neighborY < 0) neighborY = height - 1;
-				if (neighborY >= height) neighborY = 0;
-				if (neighborX < 0) neighborX = width - 1;
-				if (neighborX >= width) neighborX = 0;
-				int neighborIdx = (neighborY * width + neighborX) * channels;
+				Pattern neighbor = extractPattern(bitmap, stride.x, stride.y);
 
-				unsigned char r = data[neighborIdx];
-				unsigned char g = data[neighborIdx + 1];
-				unsigned char b = data[neighborIdx + 2];
-				unsigned char a = data[neighborIdx + 3];
-				glm::vec4 neighborColor(r, g, b, a);
-				int neighbor = this->aliases[neighborColor];
-				this->validNeighbors[source][dir].insert(neighbor);				
+				if (patternIsUnique(neighbor))
+				{
+					neighbor.id = patternCount++;
+					this->aliases[neighbor] = neighbor.id;
+					this->patterns[neighbor.id] = neighbor;
+				}
+				else
+				{
+					this->patterns[neighbor.id].frequency++;
+				}
+				
+				this->validNeighbors[source.id][dir].insert(this->aliases[neighbor]);
 			}
 		}
 	}
 }
+
+Pattern ConfigLoader::extractPattern(const Grid<int>& bitmap, int x, int y)
+{
+	Pattern pattern(-1);
+	int width = bitmap[0].size();
+	int height = bitmap.size();
+	pattern.tiles.resize(this->n, std::vector<int>(this->n));
+	for (int i = 0; i < this->n; i++)
+	{
+		for (int j = 0; j < this->n; j++)
+		{
+			int sourceX = (x + i) % width;
+			int sourceY = (y + j) % height;
+			if (sourceX < 0) sourceX += width;
+			if (sourceY < 0) sourceY += height;
+
+			pattern.tiles[i][j] = bitmap[sourceY][sourceX];
+		}
+	}
+	return pattern;
+}
+
+bool ConfigLoader::patternIsUnique(Pattern& pattern)
+{
+	if (this->aliases.count(pattern) == 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+Pattern ConfigLoader::rotate(const Pattern& pattern, int rot)
+{
+	Pattern rotated(-1);
+	rotated.tiles = pattern.tiles;
+
+	for (int r = 0; r < (rot % 4); r++)
+	{
+		std::vector<std::vector<int>> temp = rotated.tiles;
+		int size = this->n;
+
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < size; j++)
+			{
+				rotated.tiles[j][size - 1 - i] = temp[i][j];
+			}
+		}
+	}
+
+	return rotated;
+}
+
+Pattern ConfigLoader::flipHor(const Pattern& pattern)
+{
+	Pattern flipped(-1);
+	int size = this->n;
+	flipped.tiles.resize(this->n, std::vector<int>(this->n));
+
+	for (int x = 0; x < size; x++)
+	{
+		for (int y = 0; y < size; y++)
+		{
+			flipped.tiles[x][y] = pattern.tiles[size - 1 - x][y];
+		}
+	}
+	return flipped;
+}
+
+Pattern ConfigLoader::flipVer(const Pattern& pattern)
+{
+	Pattern flipped(-1);
+	int size = this->n;
+	flipped.tiles.resize(this->n, std::vector<int>(this->n));
+
+	for (int x = 0; x < size; x++)
+	{
+		for (int y = 0; y < size; y++)
+		{
+			flipped.tiles[x][y] = pattern.tiles[x][size - 1 - y];
+		}
+	}
+	return flipped;
+}
+
+std::vector<Pattern> ConfigLoader::generateSymmetries(const Pattern& base)
+{
+	std::vector<Pattern> symmetries;
+	std::unordered_set<Pattern, PatternHash> symmetrySet;
+
+	for (int rot = 0; rot < 4; rot++)
+	{
+		Pattern rotated = rotate(base, rot);
+		//symmetriesSet.insert(rotated);
+		if (symmetrySet.find(rotated) == symmetrySet.end())
+		{
+			symmetrySet.insert(rotated);
+			symmetries.push_back(rotated);
+		}
+
+		Pattern flippedH = flipHor(base);
+		if (symmetrySet.find(flippedH) == symmetrySet.end())
+		{
+			symmetrySet.insert(flippedH);
+			symmetries.push_back(flippedH);
+		}
+
+		Pattern flippedV = flipHor(base);
+		if (symmetrySet.find(flippedV) == symmetrySet.end())
+		{
+			symmetrySet.insert(flippedV);
+			symmetries.push_back(flippedV);
+		}
+	}
+	return symmetries;
+}
+

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef GAME_H
-#define GAME_H
 #include "WFCMap.h"
 
 using uint = unsigned int;
@@ -26,4 +24,3 @@ public:
 	void processInput();
 
 };
-#endif

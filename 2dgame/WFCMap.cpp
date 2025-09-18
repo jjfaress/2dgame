@@ -17,6 +17,7 @@ WFCMap::~WFCMap()
 
 void WFCMap::init()
 {
+
 	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
 	{
@@ -24,8 +25,8 @@ void WFCMap::init()
 		col.reserve(this->HEIGHT);
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
-			col.emplace_back(WFCTile(glm::vec2(i, j), config.tileTypes));
-			this->eq.push({ config.tileTypes.size(), glm::vec2(i,j) });
+			col.emplace_back(WFCTile(glm::vec2(i, j), config.patternTypes));
+			this->eq.push({ config.patternTypes.size(), glm::vec2(i,j) });
 		}
 		this->grid.emplace_back(std::move(col));
 	}
@@ -37,20 +38,56 @@ void WFCMap::init()
 	this->initialized = true;
 }
 
+
+void WFCMap::generate()
+{
+	std::mt19937 rng(this->seed);
+	std::uniform_int_distribution<std::mt19937::result_type> disX(0, this->WIDTH - 1);
+	std::uniform_int_distribution<std::mt19937::result_type> disY(0, this->HEIGHT - 1);
+
+	int cellsCollapsed = 0;
+	const int totalCells = this->WIDTH * this->HEIGHT;
+
+	//todo fix
+
+	while (cellsCollapsed < totalCells)
+	{
+		glm::vec2 target;
+
+		if (!this->eq.empty())
+		{
+			target = this->eq.top().second;
+			this->eq.pop();
+		}
+		else
+		{
+			target = glm::vec2(disX(rng), disY(rng));
+		}
+
+		if (!this->grid[target.x][target.y].collapsed)
+		{
+			collapse(target.x, target.y, rng, cellsCollapsed);
+			propagate(target.x, target.y, cellsCollapsed);
+		}
+	}
+	this->isReady = true;
+	postProcess();
+}
+
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 {
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
 	{
 		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
-		return;
+		std::cout << "collapsed: " << this->grid[x][y].collapsed << ", entropy: " << this->grid[x][y].entropy.size() << "\n";
 	}
 
 	WFCTile& tile = this->grid[x][y];
 	this->eq.remove({ tile.entropy.size(), tile.position });
 	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-	tile.type = tile.entropy[poss(rng)];
-	tile.texture = config.textures[tile.type].c_str();
+	int patternId = tile.entropy[poss(rng)];
+	tile.pattern = config.patterns[patternId];
 	tile.collapsed = true;
 	collapseCount++;
 	tile.entropy.clear();
@@ -176,39 +213,6 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 	}
 }
 
-void WFCMap::generate()
-{
-	std::mt19937 rng(this->seed);
-	std::uniform_int_distribution<std::mt19937::result_type> disX(0, this->WIDTH - 1);
-	std::uniform_int_distribution<std::mt19937::result_type> disY(0, this->HEIGHT - 1);
-
-	int cellsCollapsed = 0;
-	const int totalCells = this->WIDTH * this->HEIGHT;
-
-	while (cellsCollapsed < totalCells)
-	{
-		glm::vec2 target;
-
-		if (!this->eq.empty())
-		{
-			target = this->eq.top().second;
-			this->eq.pop();
-		}
-		else
-		{
-			target = glm::vec2(disX(rng), disY(rng));
-		}
-
-		if (!this->grid[target.x][target.y].collapsed)
-		{
-			collapse(target.x, target.y, rng, cellsCollapsed);
-			propagate(target.x, target.y, cellsCollapsed);
-		}
-	}
-	this->isReady = true;
-	postProcess();
-}
-
 void WFCMap::postProcess()
 {
 	if (this->isReady)
@@ -231,6 +235,17 @@ void WFCMap::draw(SpriteRenderer& renderer)
 
 void WFCTile::draw(SpriteRenderer& renderer)
 {
+	ConfigLoader& config = ConfigLoader::getInstance();
 	float tileSize = 16.0;
-	renderer.drawSprite(ResourceManager::getTexture(this->texture), this->position * tileSize, glm::vec2(tileSize));
+	float patternSize = tileSize * config.n;
+	Grid<int> pattern = this->pattern.tiles;
+	for (const auto& row : pattern)
+	{
+		for (const int& tile : row)
+		{
+			const char* texture = config.textures[tile].c_str();
+			renderer.drawSprite(ResourceManager::getTexture(texture), position, glm::vec2(tileSize));
+
+		}
+	}
 }

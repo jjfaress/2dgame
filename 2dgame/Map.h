@@ -11,14 +11,16 @@ struct Tile {
 	virtual ~Tile() = default;
 };
 
-template<typename T = Tile>
+template <typename T>
 class Map {
 public:
 	int WIDTH, HEIGHT;
 	Map(int width, int height, ConfigLoader& config) :
 		WIDTH(width),
 		HEIGHT(height),
-		config(config) {}
+		config(config)
+	{
+	}
 	virtual ~Map() = default;
 	virtual void init() = 0;
 	virtual void draw(SpriteRenderer& renderer) = 0;
@@ -26,6 +28,7 @@ public:
 private:
 
 protected:
+
 	virtual void postProcess() = 0;
 	ConfigLoader& config;
 	Grid<T> grid;

@@ -42,11 +42,27 @@ struct WFCTile : public Tile {
 	std::vector<int> entropy;
 	bool collapsed = false;
 	int type = NULL;
+	Pattern pattern = NULL;
+
 	WFCTile(glm::vec2 position, std::vector<int> poss) : 
 		Tile(position),
 		entropy(poss) {}
 	void draw(SpriteRenderer& renderer);
 };
+
+//struct WFCTile : public Tile {
+//	std::vector<int> entropy;
+//	bool collapsed = false;
+//	int type = NULL;
+//	Pattern pattern = NULL;
+//
+//	WFCTile(glm::vec2 position, std::vector<int> poss) :
+//		Tile(position),
+//		entropy(poss)
+//	{
+//	}
+//	void draw(SpriteRenderer& renderer);
+//};
 
 class WFCMap : public Map<WFCTile>
 {
@@ -63,6 +79,7 @@ public:
 	void draw(SpriteRenderer& renderer);
 
 private:
+
 	std::vector<WFCTile> finalTiles;
 	unsigned int seed;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;

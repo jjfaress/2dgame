@@ -1,5 +1,8 @@
 bitmap: assets/coast4.png
 
+
+pattern_size: 3
+
 tile_data:
   # 0:
   #   name: beachN

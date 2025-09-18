@@ -58,41 +58,29 @@ struct Vec4Eq {
 
 struct Pattern {
 	Grid<int> tiles;
-	int frequency;
-	size_t hash;
-	int idx;
+	int id;
+	int frequency = 0;
+	Pattern() {}
+	Pattern(int id) : id(id) {}
 
-	Pattern(const Grid<int>& pattern) :
-		tiles(pattern),
-		frequency(1), idx(-1)
-	{
-		hash = getHash();
-	}
-
-	bool operator == (const Pattern& other) const
+	bool operator==(const Pattern& other) const
 	{
 		return tiles == other.tiles;
-	}
-
-private:
-	size_t getHash() const
-	{
-		size_t h = 0;
-		for (const auto& row : tiles)
-		{
-			for (const int tile : row)
-			{
-				h ^= std::hash<int>{}(tile)+0x9e3779b9 + (h << 6) + (h >> 2);
-			}
-		}
-		return h;
 	}
 };
 
 struct PatternHash {
-	size_t operator()(const Pattern& p) const
+	size_t operator()(const Pattern& pattern) const
 	{
-		return p.hash;
+		size_t hash = 0;
+		for (const auto& row : pattern.tiles)
+		{
+			for (const int tile : row)
+			{
+				hash ^= std::hash<int>{}(tile)+0x9e3779b9 + (hash << 6) + (hash >> 2);
+			}
+		}
+		return hash;
 	}
 };
 
@@ -105,35 +93,33 @@ using neighbor = int;
 
 class ConfigLoader
 {
+private:
+	static ConfigLoader* instance;
+
+	ConfigLoader(const char* path);
+	Pattern extractPattern(const Grid<int>& bitmap, int x, int y);
+	Pattern rotate(const Pattern& pattern, int rot);
+	Pattern flipHor(const Pattern& pattern);
+	Pattern flipVer(const Pattern& pattern);
+	std::vector<Pattern> generateSymmetries(const Pattern& base);
+	bool patternIsUnique(Pattern& pattern);
+	void loadTileData(const YAML::Node& node);
+	void loadBitmap(const char* file);
+
+
 public:
+	int n = 3;
 	std::vector<int> tileTypes;
+	std::vector<int> patternTypes;
+	std::unordered_map<glm::vec4, int, Vec4Hash> colors;
+	std::unordered_map<Pattern, int, PatternHash> aliases;
+	std::unordered_map<int, Pattern, PatternHash> patterns;
 	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
-	umap<int, std::string> textures;
-
-	std::vector<Pattern> patterns;
-	Grid<std::vector<int>> patternRules;
-	//Grid<int> bitmap;
-
-	int patternSize = 3;
-	bool perInput = true;
-
+	std::unordered_map<int, std::string> textures;
 
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
 
 	static ConfigLoader& getInstance(const char* path = nullptr);
-
-protected:
-	umap<source, int> freq;
-	std::unordered_map<glm::vec4, int, Vec4Hash> aliases;
-
-	static ConfigLoader* instance;
-	ConfigLoader(const char* path);
-	void loadTileData(const YAML::Node& node);
-	void loadBitmap(const char* file);
-
-	void extractPatterns();
-	Pattern getPattern(int x, int y) const;
-	void getValidNeighbors();
 
 };
