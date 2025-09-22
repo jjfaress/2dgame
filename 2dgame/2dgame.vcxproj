@@ -117,6 +117,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;yaml-cppd.lib;libnoise.lib;glm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Users\jjfar\source\repos\2dgame\2dgame;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
     </Link>
     <PreLinkEvent>
       <Command>"$(VCToolsInstallDir)bin\HostX64\x64\lib.exe" /out:"$(OutDir)$(ProjectName).lib" "$(IntermediateOutputPath)*.obj"</Command>
@@ -142,8 +144,8 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="noiseutils.cpp" />
-    <ClCompile Include="PerlinMap.cpp" />
     <ClCompile Include="PixelRenderer.cpp" />
     <ClCompile Include="WFCMap.cpp" />
     <ClCompile Include="main.cpp" />
@@ -156,9 +158,9 @@
     <ClInclude Include="ConfigLoader.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Globals.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="noiseutils.h" />
-    <ClInclude Include="PerlinMap.h" />
     <ClInclude Include="PixelRenderer.h" />
     <ClInclude Include="WFCMap.h" />
     <ClInclude Include="ResourceManager.h" />

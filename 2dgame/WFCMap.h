@@ -1,13 +1,12 @@
 #pragma once
 #include "Map.h"
 #include <vector>
-#include "ConfigLoader.h"
 #include <random>
 #include "Texture.h"
 #include <glm/glm.hpp>
 #include "SpriteRenderer.h"
 #include <queue>
-#include "GameObject.h"
+#include "ConfigLoader.h"
 
 struct compare {
 	bool operator()(const std::pair<int, glm::vec2>& a,
@@ -38,53 +37,40 @@ public:
 	}
 };
 
-struct WFCTile : public Tile {
+struct Chunk {
+	Pattern pattern;
 	std::vector<int> entropy;
+	glm::vec2 position;
 	bool collapsed = false;
-	int type = NULL;
-	Pattern pattern = NULL;
 
-	WFCTile(glm::vec2 position, std::vector<int> poss) : 
-		Tile(position),
-		entropy(poss) {}
+	Chunk(glm::vec2 pos, std::vector<int> ent) : 
+		position(pos), 
+		entropy(ent) {}
+
 	void draw(SpriteRenderer& renderer);
 };
 
-//struct WFCTile : public Tile {
-//	std::vector<int> entropy;
-//	bool collapsed = false;
-//	int type = NULL;
-//	Pattern pattern = NULL;
-//
-//	WFCTile(glm::vec2 position, std::vector<int> poss) :
-//		Tile(position),
-//		entropy(poss)
-//	{
-//	}
-//	void draw(SpriteRenderer& renderer);
-//};
-
-class WFCMap : public Map<WFCTile>
+class WFCMap : public Map<Chunk>
 {
 public:
 	bool initialized = false;
-	bool isReady;
-	WFCMap(int width, 
-		int height, 
-		unsigned int seed, 
-		const char* path = nullptr);
+	bool isReady = false;
+	WFCMap(int width,
+		int height,
+		unsigned int seed);
 	~WFCMap() override;
 	void generate();
+	bool stepGenerate(SpriteRenderer& renderer);
 	void init() override;
 	void draw(SpriteRenderer& renderer);
 
 private:
 
-	std::vector<WFCTile> finalTiles;
+	std::vector<Chunk> finalChunks;
 	unsigned int seed;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;
 	void collapse(int x, int y, std::mt19937& rng, int& collapseCount);
 	void collapse(int x, int y, unsigned int& seed, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
-	void postProcess() override;
+	//void postProcess() override;
 };

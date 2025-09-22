@@ -1,66 +1,31 @@
-bitmap: assets/coast4.png
-
+bitmap: assets/blobs.png
 
 pattern_size: 3
+map_width: 10
+map_height: 10
 
 tile_data:
-  # 0:
-  #   name: beachN
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 1:
-  #   name: beachNe
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 2:
-  #   name: beachE
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 3:
-  #   name: beachSe
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 4:
-  #   name: beachS
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 5:
-  #   name: beachSw
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 6:
-  #   name: beachW
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  # 7:
-  #   name: beachNw
-  #   texture: beach-n.png
-  #   bitColor: [238, 195, 154, 255]
-
-  8:
+  0:
     name: forrest
     texture: forrest.png
     bitColor: [75, 105, 47, 255]
 
-  9:
+  1:
     name: green
     texture: grass.png
     bitColor: [106, 190, 48, 255]
 
-  10:
+  2:
     name: teal
     texture: water.png
     bitColor: [95, 205, 228, 255]
 
-  11:
+  3:
     name: tan
     texture: beach.png
     bitColor: [238, 195, 154, 255]
+  4:
+    name: orange
+    texture: desert.png
+    bitColor: [223, 113, 38, 255]
     

@@ -1,13 +1,14 @@
 #include "WFCMap.h"
+#include "Globals.h"
 #include <unordered_set>
 #include <iostream>
 #include "ResourceManager.h"
 #include <omp.h>
 
-WFCMap::WFCMap(int width, int height, unsigned int seed, const char* path) :
-	Map(width, height, path ? ConfigLoader::getInstance(path) : ConfigLoader::getInstance()),
-	seed(seed),
-	isReady(false)
+
+WFCMap::WFCMap(int width, int height, unsigned int seed) :
+	Map(width, height),
+	seed(seed)
 {
 }
 
@@ -17,15 +18,14 @@ WFCMap::~WFCMap()
 
 void WFCMap::init()
 {
-
 	this->grid.reserve(this->WIDTH);
 	for (int i = 0; i < this->WIDTH; i++)
 	{
-		std::vector<WFCTile> col;
+		std::vector<Chunk> col;
 		col.reserve(this->HEIGHT);
 		for (int j = 0; j < this->HEIGHT; j++)
 		{
-			col.emplace_back(WFCTile(glm::vec2(i, j), config.patternTypes));
+			col.emplace_back(Chunk(glm::vec2(i, j), config.patternTypes));
 			this->eq.push({ config.patternTypes.size(), glm::vec2(i,j) });
 		}
 		this->grid.emplace_back(std::move(col));
@@ -48,12 +48,10 @@ void WFCMap::generate()
 	int cellsCollapsed = 0;
 	const int totalCells = this->WIDTH * this->HEIGHT;
 
-	//todo fix
-
 	while (cellsCollapsed < totalCells)
 	{
 		glm::vec2 target;
-
+		std::cout << cellsCollapsed << "\n";
 		if (!this->eq.empty())
 		{
 			target = this->eq.top().second;
@@ -71,7 +69,6 @@ void WFCMap::generate()
 		}
 	}
 	this->isReady = true;
-	postProcess();
 }
 
 void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
@@ -79,19 +76,19 @@ void WFCMap::collapse(int x, int y, std::mt19937& rng, int& collapseCount)
 	if (x < 0 || x >= this->WIDTH || y < 0 || y >= this->HEIGHT ||
 		this->grid[x][y].collapsed || this->grid[x][y].entropy.empty())
 	{
-		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n" << this->grid[x][y].entropy.size();
+		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n";
 		std::cout << "collapsed: " << this->grid[x][y].collapsed << ", entropy: " << this->grid[x][y].entropy.size() << "\n";
 	}
 
-	WFCTile& tile = this->grid[x][y];
-	this->eq.remove({ tile.entropy.size(), tile.position });
-	std::uniform_int_distribution<std::mt19937::result_type> poss(0, tile.entropy.size() - 1);
-	int patternId = tile.entropy[poss(rng)];
-	tile.pattern = config.patterns[patternId];
-	tile.collapsed = true;
+	Chunk& chunk = this->grid[x][y];
+	this->eq.remove({ chunk.entropy.size(), chunk.position });
+	std::uniform_int_distribution<std::mt19937::result_type> poss(0, chunk.entropy.size() - 1);
+	int patternId = chunk.entropy[poss(rng)];
+	chunk.pattern = config.patterns[patternId];
+	chunk.collapsed = true;
 	collapseCount++;
-	tile.entropy.clear();
-	tile.entropy.shrink_to_fit();
+	chunk.entropy.clear();
+	chunk.entropy.shrink_to_fit();
 }
 
 void WFCMap::collapse(int x, int y, unsigned int& seed, int& collapseCount)
@@ -104,33 +101,23 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 {
 	std::queue<glm::ivec2> queue;
 	queue.push(glm::ivec2(x, y));
-
 	glm::ivec2 directions[] = {
 		glm::ivec2(0, 1), //north
-		glm::ivec2(1, 1), //north east
+		//glm::ivec2(1, 1), //north east
 		glm::ivec2(1, 0), //east
-		glm::ivec2(1, -1), //south east
+		//glm::ivec2(1, -1), //south east
 		glm::ivec2(0, -1), //south
-		glm::ivec2(-1, -1), //south west
+		//glm::ivec2(-1, -1), //south west
 		glm::ivec2(-1, 0), //west
-		glm::ivec2(-1, 1) //north west
+		//glm::ivec2(-1, 1) //north west
 	};
 
 	while (!queue.empty())
 	{
 		glm::ivec2 source = queue.front();
 		queue.pop();
-
-		struct Update {
-			glm::ivec2 position;
-			std::vector<int> newEntropy;
-			size_t originalEntropy;
-		};
-		std::vector<Update> updates;
-		updates.reserve(8);
-
-		#pragma omp parallel for
-		for (int dir = 0; dir < 8; dir++)
+		
+		for (int dir = 0; dir < 4; dir++)
 		{
 			glm::ivec2 neighbor = source + directions[dir];
 
@@ -140,25 +127,26 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				continue;
 			}
 
-			WFCTile& sourceTile = this->grid[source.x][source.y];
-			WFCTile& neighborTile = this->grid[neighbor.x][neighbor.y];
-
+			Chunk& sourceChunk = this->grid[source.x][source.y];
+			Chunk& neighborChunk = this->grid[neighbor.x][neighbor.y];
+			
 			if (this->grid[neighbor.x][neighbor.y].collapsed)
 			{
 				continue;
 			}
 
-			std::vector<int> neighborPoss = neighborTile.entropy;
+			std::vector<int>& neighborPoss = neighborChunk.entropy;
 			size_t originalEntropy = neighborPoss.size();
 
-			if (sourceTile.collapsed)
+			//std::cout << config.validNeighbors[sourceChunk.pattern.id][dir].size();
+
+			if (sourceChunk.collapsed)
 			{
-				std::unordered_map<int, std::unordered_set<int>> validNeighborsMap = config.validNeighbors[sourceTile.type];
-				std::unordered_set<int> validNeighbors = validNeighborsMap[dir];
+				std::unordered_set<int>& validNeighbors = config.validNeighbors[sourceChunk.pattern.id][dir];
 				neighborPoss.erase(
 					std::remove_if(neighborPoss.begin(), neighborPoss.end(),
-						[&validNeighbors](int type) {
-							return validNeighbors.find(type) == validNeighbors.end();
+						[&validNeighbors](int pattern) {
+							return validNeighbors.find(pattern) == validNeighbors.end();
 						}),
 					neighborPoss.end()
 				);
@@ -166,16 +154,17 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 			else
 			{
 				std::unordered_set<int> validNeighbors;
-				std::vector<int>& sourcePos = sourceTile.entropy;
+				std::vector<int>& sourcePos = sourceChunk.entropy;
 
-				for (const int type : sourcePos)
+				for (const int& type : sourcePos)
 				{
 					std::unordered_map<int, std::unordered_set<int>> neighborsMap = config.validNeighbors[type];
-					for (const auto& neighbor : neighborsMap[dir])
+					for (const int& neighbor : neighborsMap[dir])
 					{
 						validNeighbors.insert(neighbor);
 					}
 				}
+				
 				neighborPoss.erase(
 					std::remove_if(neighborPoss.begin(), neighborPoss.end(),
 						[&validNeighbors](int type) {
@@ -185,67 +174,47 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 				);
 			}
 
-			if (neighborPoss.size() != originalEntropy)
+			if (neighborPoss.size() != originalEntropy && !neighborChunk.collapsed)
 			{
-				#pragma omp critical
+				this->eq.remove({ originalEntropy, neighborChunk.position });
+				this->eq.push({ neighborPoss.size(), neighborChunk.position });
+				if (neighborPoss.size() == 1)
 				{
-					updates.push_back({ neighbor, std::move(neighborPoss), originalEntropy });
+					collapse(neighborChunk.position.x, neighborChunk.position.y, this->seed, collapseCount);
 				}
+				queue.push(glm::vec2(neighbor.x, neighbor.y));
 			}
 		}
 
-		for (const Update& update : updates)
-		{
-			WFCTile& neighbor = this->grid[update.position.x][update.position.y];
-			if (!neighbor.collapsed && neighbor.entropy.size() == update.originalEntropy)
-			{
-				this->eq.remove({ update.originalEntropy, neighbor.position });
-				neighbor.entropy = update.newEntropy;
-				this->eq.push({ neighbor.entropy.size(), neighbor.position });
-
-				if (neighbor.entropy.size() == 1)
-				{
-					collapse(neighbor.position.x, neighbor.position.y, this->seed, collapseCount);
-				}
-				queue.push(update.position);
-			}
-		}
-	}
-}
-
-void WFCMap::postProcess()
-{
-	if (this->isReady)
-	{
-		for (const auto& row : this->grid)
-		{
-			this->finalTiles.insert(this->finalTiles.end(), row.begin(), row.end());
-		}
 	}
 }
 
 void WFCMap::draw(SpriteRenderer& renderer)
 {
-	for (WFCTile& tile : this->finalTiles)
+	for (auto& row : this->grid)
 	{
-		tile.draw(renderer);
+		for (Chunk& chunk : row)
+		{
+			chunk.draw(renderer);
+		}
 	}
 }
 
 
-void WFCTile::draw(SpriteRenderer& renderer)
+void Chunk::draw(SpriteRenderer& renderer)
 {
-	ConfigLoader& config = ConfigLoader::getInstance();
 	float tileSize = 16.0;
-	float patternSize = tileSize * config.n;
-	Grid<int> pattern = this->pattern.tiles;
-	for (const auto& row : pattern)
+	float chunkSize = tileSize * config.n;
+	Grid<int>& pattern = this->pattern.tiles;
+	
+	for (int x = 0; x < pattern.size(); x++)
 	{
-		for (const int& tile : row)
+		for (int y = 0; y < pattern[0].size(); y++)
 		{
+			int tile = pattern[x][y];
 			const char* texture = config.textures[tile].c_str();
-			renderer.drawSprite(ResourceManager::getTexture(texture), position, glm::vec2(tileSize));
-
+			glm::vec2 tilePosition = (this->position * chunkSize) + glm::vec2(x * tileSize, y * tileSize);
+			renderer.drawSprite(ResourceManager::getTexture(texture), tilePosition, glm::vec2(tileSize));
 		}
 	}
 }

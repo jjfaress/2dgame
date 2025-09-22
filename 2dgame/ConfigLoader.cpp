@@ -2,13 +2,32 @@
 #include <iostream>
 #include "stb_image.h"
 
-ConfigLoader* ConfigLoader::instance = nullptr;
-
 ConfigLoader::ConfigLoader(const char* path)
 {
 	try
 	{
+
 		YAML::Node config = YAML::LoadFile(path);
+
+		if (config["pattern_size"])
+		{
+			this->n = config["pattern_size"].as<int>();
+		}
+		else
+		{
+			throw std::runtime_error(
+				std::string("Pattern size not defined in ") + path);
+		}
+		if (config["map_width"] && config["map_height"])
+		{
+			this->mapWidth = config["map_width"].as<int>();
+			this->mapHeight = config["map_height"].as<int>();
+		}
+		else
+		{
+			throw std::runtime_error(
+				std::string("Error: map dimensions not fully defined in ") + path);
+		}
 		if (config["tile_data"])
 		{
 			loadTileData(config["tile_data"]);
@@ -21,6 +40,10 @@ ConfigLoader::ConfigLoader(const char* path)
 	catch (const YAML::Exception& e)
 	{
 		std::cerr << "Config not loaded :: YAML error: " << e.what() << std::endl;
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cerr << e.what() << std::endl;
 	}
 }
 
@@ -37,7 +60,7 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 		glm::vec4 color = pair.second["bitColor"].as<glm::vec4>();
 		int id = pair.first.as<int>();
 		std::string texture = pair.second["texture"].as<std::string>();
-		this->colors[color] = id;
+		this->tileIds[color] = id;
 		this->textures[id] = texture;
 		this->tileTypes.push_back(id);
 	}
@@ -48,13 +71,13 @@ void ConfigLoader::loadBitmap(const char* file)
 {
 	static glm::ivec2 directions[] = {
 		glm::ivec2(0, 1), //north
-		glm::ivec2(1, 1), //north east
+		//glm::ivec2(1, 1), //north east
 		glm::ivec2(1, 0), //east
-		glm::ivec2(1, -1), //south east
+		//glm::ivec2(1, -1), //south east
 		glm::ivec2(0, -1), //south
-		glm::ivec2(-1, -1), //south west
+		//glm::ivec2(-1, -1), //south west
 		glm::ivec2(-1, 0), //west
-		glm::ivec2(-1, 1) //north west
+		//glm::ivec2(-1, 1) //north west
 	};
 
 
@@ -80,9 +103,11 @@ void ConfigLoader::loadBitmap(const char* file)
 			unsigned char b = data[idx + 2];
 			unsigned char a = data[idx + 3];
 			glm::vec4 color(r, g, b, a);
-			bitmap[x][y] = this->colors[color];
+			bitmap[x][y] = this->tileIds[color];
 		}
 	}
+
+	stbi_image_free(data);
 
 	for (int x = 0; x < width; x++)
 	{
@@ -92,35 +117,38 @@ void ConfigLoader::loadBitmap(const char* file)
 			if (patternIsUnique(source))
 			{
 				source.id = patternCount++;
-				this->aliases[source] = source.id;
+				this->patternIds[source] = source.id;
 				this->patterns[source.id] = source;
 				this->patternTypes.push_back(source.id);
-				//std::cout << patternTypes.size()<<"\n";
 			}
 			else
 			{
+				source.id = this->patternIds[source];
 				this->patterns[source.id].frequency++;
 			}
 
-			for (int dir = 0; dir < 8; dir++)
+
+			for (int dir = 0; dir < 4; dir++)
 			{
 				glm::ivec2 direction = directions[dir];
-				glm::ivec2 stride = direction + glm::ivec2(this->n);
+				glm::ivec2 stride = glm::ivec2(x, y) + (direction * this->n);
+				//glm::ivec2 stride = glm::ivec2(x, y) + direction;
 
 				Pattern neighbor = extractPattern(bitmap, stride.x, stride.y);
 
 				if (patternIsUnique(neighbor))
 				{
 					neighbor.id = patternCount++;
-					this->aliases[neighbor] = neighbor.id;
+					this->patternIds[neighbor] = neighbor.id;
 					this->patterns[neighbor.id] = neighbor;
+					this->patternTypes.push_back(neighbor.id);
 				}
 				else
 				{
+					neighbor.id = this->patternIds[neighbor];
 					this->patterns[neighbor.id].frequency++;
 				}
-				
-				this->validNeighbors[source.id][dir].insert(this->aliases[neighbor]);
+				this->validNeighbors[source.id][dir].insert(neighbor.id);
 			}
 		}
 	}
@@ -141,7 +169,7 @@ Pattern ConfigLoader::extractPattern(const Grid<int>& bitmap, int x, int y)
 			if (sourceX < 0) sourceX += width;
 			if (sourceY < 0) sourceY += height;
 
-			pattern.tiles[i][j] = bitmap[sourceY][sourceX];
+			pattern.tiles[i][j] = bitmap[sourceX][sourceY];
 		}
 	}
 	return pattern;
@@ -149,7 +177,7 @@ Pattern ConfigLoader::extractPattern(const Grid<int>& bitmap, int x, int y)
 
 bool ConfigLoader::patternIsUnique(Pattern& pattern)
 {
-	if (this->aliases.count(pattern) == 0)
+	if (this->patternIds.find(pattern) == this->patternIds.end())
 	{
 		return true;
 	}

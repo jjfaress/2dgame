@@ -1,8 +1,10 @@
 #pragma once
 #include "SpriteRenderer.h"
 #include <vector>
-#include "ConfigLoader.h"
 #include "GameObject.h"
+
+template <typename T>
+using Grid = std::vector<std::vector<T>>;
 
 struct Tile {
 	glm::vec2 position;
@@ -15,10 +17,10 @@ template <typename T>
 class Map {
 public:
 	int WIDTH, HEIGHT;
-	Map(int width, int height, ConfigLoader& config) :
+	Map(int width, int height) :
 		WIDTH(width),
-		HEIGHT(height),
-		config(config)
+		HEIGHT(height)
+		//config(config)
 	{
 	}
 	virtual ~Map() = default;
@@ -28,8 +30,5 @@ public:
 private:
 
 protected:
-
-	virtual void postProcess() = 0;
-	ConfigLoader& config;
 	Grid<T> grid;
 };

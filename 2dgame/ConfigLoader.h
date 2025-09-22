@@ -73,11 +73,14 @@ struct PatternHash {
 	size_t operator()(const Pattern& pattern) const
 	{
 		size_t hash = 0;
-		for (const auto& row : pattern.tiles)
+		for (size_t i = 0; i < pattern.tiles.size(); i++)
 		{
-			for (const int tile : row)
+			for (size_t j = 0; j < pattern.tiles[0].size(); j++)
 			{
-				hash ^= std::hash<int>{}(tile)+0x9e3779b9 + (hash << 6) + (hash >> 2);
+				size_t tileHash = std::hash<int>{}(pattern.tiles[i][j]);
+				size_t positionHash = std::hash<size_t>{}(i * pattern.tiles[i].size() * j);
+
+				hash ^= (tileHash ^ positionHash) + 0x9e3779b9 + (hash << 6) + (hash << 2);
 			}
 		}
 		return hash;
@@ -93,8 +96,24 @@ using neighbor = int;
 
 class ConfigLoader
 {
+public:
+	int n = 3;
+	int mapWidth, mapHeight;
+	std::vector<int> tileTypes;
+	std::vector<int> patternTypes;
+	std::unordered_map<glm::vec4, int, Vec4Hash> tileIds;
+	std::unordered_map<Pattern, int, PatternHash> patternIds;
+	std::unordered_map<int, Pattern> patterns;
+	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
+	std::unordered_map<int, std::string> textures;
+
+	ConfigLoader(const ConfigLoader&) = delete;
+	ConfigLoader& operator=(const ConfigLoader&) = delete;
+
+	static ConfigLoader& getInstance(const char* path = nullptr);
+
 private:
-	static ConfigLoader* instance;
+	//static ConfigLoader* instance;
 
 	ConfigLoader(const char* path);
 	Pattern extractPattern(const Grid<int>& bitmap, int x, int y);
@@ -105,21 +124,5 @@ private:
 	bool patternIsUnique(Pattern& pattern);
 	void loadTileData(const YAML::Node& node);
 	void loadBitmap(const char* file);
-
-
-public:
-	int n = 3;
-	std::vector<int> tileTypes;
-	std::vector<int> patternTypes;
-	std::unordered_map<glm::vec4, int, Vec4Hash> colors;
-	std::unordered_map<Pattern, int, PatternHash> aliases;
-	std::unordered_map<int, Pattern, PatternHash> patterns;
-	umap<source, umap<direction, std::unordered_set<neighbor>>> validNeighbors;
-	std::unordered_map<int, std::string> textures;
-
-	ConfigLoader(const ConfigLoader&) = delete;
-	ConfigLoader& operator=(const ConfigLoader&) = delete;
-
-	static ConfigLoader& getInstance(const char* path = nullptr);
 
 };

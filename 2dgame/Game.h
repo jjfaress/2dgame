@@ -15,7 +15,9 @@ public:
 	bool Keys[1024];
 	uint WIDTH, HEIGHT;
 
-	Game(uint width, uint height);
+	WFCMap level;
+
+	Game(uint screen_width, uint screen_height);
 	~Game();
 
 	void init();

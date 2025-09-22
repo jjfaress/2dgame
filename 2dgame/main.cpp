@@ -1,7 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Game.h"
+#include "Globals.h"
 #include "ResourceManager.h"
+
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
@@ -41,7 +43,6 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	game.init();
-
 	float deltaTime = 0.0f;
 	float lastFrame = 0.0f;
 
@@ -50,8 +51,10 @@ int main()
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
 		glClear(GL_COLOR_BUFFER_BIT);
 		game.render();
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

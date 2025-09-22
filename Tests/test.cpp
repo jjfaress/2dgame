@@ -8,8 +8,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
-
 struct GLTestContext {
 	GLFWwindow* window = nullptr;
 	GLTestContext()
@@ -30,7 +28,7 @@ static GLTestContext glContext;
 
 WFCMap* map = nullptr;
 
-int mapSize = 50;
+int mapSize = 10;
 
 static TEST(base, CONSTRUCTION)
 {
