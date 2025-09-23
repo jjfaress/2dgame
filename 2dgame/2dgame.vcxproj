@@ -136,8 +136,12 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>yaml-cppd.lib;glm.lib;glfw3.lib;libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cpp.lib;glm.lib;glfw3.lib;libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\jjfar\source\repos\2dgame\2dgame;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreLinkEvent>
+      <Command>"$(VCToolsInstallDir)bin\HostX64\x64\lib.exe" /out:"$(OutDir)$(ProjectName).lib" "$(IntermediateOutputPath)*.obj"</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConfigLoader.cpp" />

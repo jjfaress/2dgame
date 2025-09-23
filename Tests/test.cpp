@@ -1,85 +1,65 @@
 #include "pch.h"
+#include <benchmark/benchmark.h>
+//#include "../2dgame/Globals.h"
 #include "../2dgame/WFCMap.h"
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include "../2dgame/SpriteRenderer.h"
-#include "../2dgame/ResourceManager.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-struct GLTestContext {
-	GLFWwindow* window = nullptr;
-	GLTestContext()
-	{
-		glfwInit();
-		window = glfwCreateWindow(800, 600, "Test", nullptr, nullptr);
-		glfwMakeContextCurrent(window);
-		gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	}
-	~GLTestContext()
-	{
-		glfwDestroyWindow(window);
-		glfwTerminate();
-	}
-};
-
-static GLTestContext glContext;
-
-WFCMap* map = nullptr;
-
-int mapSize = 10;
-
-static TEST(base, CONSTRUCTION)
+TEST(BASE, CONSTRUCT)
 {
-	map = new WFCMap(mapSize, mapSize, 12345, "config.yaml");
+	WFCMap* map = new WFCMap(10, 10, 12345);
 	EXPECT_TRUE(map != nullptr);
+	delete map;
 }
 
-static TEST(base, INIT)
+TEST(BASE, INIT)
 {
-	if (map != nullptr)
+	WFCMap* map = new WFCMap(10, 10, 12345);
+	map->init();
+	EXPECT_TRUE(map->initialized);
+	delete map;
+}
+
+TEST(BASE, GENERATE)
+{
+	WFCMap* map = new WFCMap(10, 10, 12345);
+	map->init();
+	//EXPECT_TRUE(map->initialized);
+	map->generate();
+	EXPECT_TRUE(map->isReady);
+	delete map;
+}
+
+static void BM_CONSTRUCTION(benchmark::State& state)
+{
+	for (auto _ : state)
+	{
+		WFCMap* map = new WFCMap(10, 10, 12345);
+		delete map;
+	}
+}
+
+static void BM_INITIALIZATION(benchmark::State& state)
+{
+	WFCMap* map = new WFCMap(10, 10, 12345);
+	for (auto _ : state)
 	{
 		map->init();
 	}
-	EXPECT_TRUE(map->initialized);
+	delete map;
 }
 
-static TEST(base, GENERATION)
+static void BM_GENERATION(benchmark::State& state)
 {
-	if (map->initialized)
+	WFCMap* map = new WFCMap(10, 10, 12345);
+	map->init();
+	for (auto _ : state)
 	{
 		map->generate();
 	}
-	EXPECT_TRUE(map->isReady);
+	delete map;
 }
 
-static TEST(base, DRAWING)
-{
-	ResourceManager::loadShader("spriteShader.vert", "spriteShader.frag", std::string("sprite"));
-	glm::mat4 projection = glm::ortho(0.0f, 50.0f, 50.0f, 0.0f);
-	ResourceManager::getShader("sprite").use().setInt("image", 0);
-	ResourceManager::getShader("sprite").setMat4("projection", projection);
-	Shader spriteSpader = ResourceManager::getShader("sprite");
-	SpriteRenderer* renderer = new SpriteRenderer(spriteSpader);
-	if (map->isReady)
-	{
-		map->draw(*renderer);
-	}
-}
+BENCHMARK(BM_CONSTRUCTION);
+BENCHMARK(BM_INITIALIZATION);
+BENCHMARK(BM_GENERATION);
 
-//TEST_F(MapTest, construction)
-//{
-//	map = new WFCMap(50, 50, 12345, "config.yaml");
-//	ASSERT_NE(map, nullptr);
-//}
-//
-//TEST_F(MapTest, init)
-//{
-//	map->init();
-//}
-//
-//TEST_F(MapTest, generation)
-//{
-//	map->generate();
-//}
+BENCHMARK_MAIN();

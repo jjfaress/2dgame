@@ -80,7 +80,6 @@ void ConfigLoader::loadBitmap(const char* file)
 		//glm::ivec2(-1, 1) //north west
 	};
 
-
 	int width, height, channels;
 	unsigned char* data = stbi_load(file, &width, &height, &channels, 0);
 	if (!data)
@@ -132,7 +131,6 @@ void ConfigLoader::loadBitmap(const char* file)
 			{
 				glm::ivec2 direction = directions[dir];
 				glm::ivec2 stride = glm::ivec2(x, y) + (direction * this->n);
-				//glm::ivec2 stride = glm::ivec2(x, y) + direction;
 
 				Pattern neighbor = extractPattern(bitmap, stride.x, stride.y);
 

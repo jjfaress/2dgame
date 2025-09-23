@@ -110,11 +110,9 @@ public:
 	ConfigLoader(const ConfigLoader&) = delete;
 	ConfigLoader& operator=(const ConfigLoader&) = delete;
 
-	static ConfigLoader& getInstance(const char* path = nullptr);
+	static ConfigLoader& getInstance(const char* path);
 
 private:
-	//static ConfigLoader* instance;
-
 	ConfigLoader(const char* path);
 	Pattern extractPattern(const Grid<int>& bitmap, int x, int y);
 	Pattern rotate(const Pattern& pattern, int rot);

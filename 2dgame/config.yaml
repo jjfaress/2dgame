@@ -1,14 +1,14 @@
-bitmap: assets/blobs.png
+bitmap: assets/flowers.png
 
-pattern_size: 3
+pattern_size: 4
 map_width: 10
 map_height: 10
 
 tile_data:
   0:
-    name: forrest
-    texture: forrest.png
-    bitColor: [75, 105, 47, 255]
+    name: tan
+    texture: beach.png
+    bitColor: [238, 195, 154, 255]
 
   1:
     name: green
@@ -21,9 +21,10 @@ tile_data:
     bitColor: [95, 205, 228, 255]
 
   3:
-    name: tan
-    texture: beach.png
-    bitColor: [238, 195, 154, 255]
+    name: forrest
+    texture: forrest.png
+    bitColor: [75, 105, 47, 255]
+
   4:
     name: orange
     texture: desert.png
