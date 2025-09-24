@@ -5,7 +5,6 @@
 #include "ResourceManager.h"
 #include <omp.h>
 
-
 WFCMap::WFCMap(int width, int height, unsigned int seed) :
 	Map(width, height),
 	seed(seed)
@@ -33,7 +32,9 @@ void WFCMap::init()
 
 	for (const auto& type : config.tileTypes)
 	{
-		ResourceManager::loadTexture(("assets/" + config.textures[type]).c_str(), false, config.textures[type]);
+		ResourceManager::loadTexture(("assets/" + config.textures[type]).c_str(), 
+			false, 
+			config.textures[type]);
 	}
 	this->initialized = true;
 }
@@ -51,7 +52,7 @@ void WFCMap::generate()
 	while (cellsCollapsed < totalCells)
 	{
 		glm::vec2 target;
-		std::cout << cellsCollapsed << "\n";
+		//std::cout << cellsCollapsed << "\n";
 		if (!this->eq.empty())
 		{
 			target = this->eq.top().second;

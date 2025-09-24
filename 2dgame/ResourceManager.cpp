@@ -5,19 +5,29 @@
 #include "stb_image.h"
 #include <glad/glad.h>
 
-std::map<std::string, Texture2D> ResourceManager::Textures;
-std::map<std::string, Shader> ResourceManager::Shaders;
+//std::map<std::string, Texture2D> ResourceManager::Textures;
+//std::map<std::string, Shader> ResourceManager::Shaders;
 
 Shader ResourceManager::getShader(std::string name)
 {
-	return Shaders[name];
+	return getShadersMap()[name];
+	//return Shaders[name];
 }
+
+std::map<std::string, Shader>& ResourceManager::getShadersMap()
+{
+	static std::map<std::string, Shader> shaders;
+	return shaders;
+}
+
+
 
 Shader ResourceManager::loadShader(const char* vertexSource, const char* fragmentSource, std::string name)
 {
-	Shaders[name] = loadShaderFromFile(vertexSource, fragmentSource);
-	return Shaders[name];
+	getShadersMap()[name] = loadShaderFromFile(vertexSource, fragmentSource);
+	return getShadersMap()[name];
 }
+
 
 Shader ResourceManager::loadShaderFromFile(const char* vertexSource, const char* fragmentSource)
 {
@@ -47,14 +57,35 @@ Shader ResourceManager::loadShaderFromFile(const char* vertexSource, const char*
 
 Texture2D ResourceManager::getTexture(std::string name)
 {
-	return Textures[name];
+	//return Textures[name];
+	return getTexturesMap()[name];
+}
+
+
+
+std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
+{
+	static std::map<std::string, Texture2D> textures;
+	return textures;
 }
 
 Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string name)
 {
-	Textures[name] = loadTextureFromFile(file, alpha);
-	return Textures[name];
+	getTexturesMap()[name] = loadTextureFromFile(file, alpha);
+	return getTexturesMap()[name];
 }
+
+
+
+//Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string name)
+//{
+//	if (Textures.find(name) == Textures.end())
+//	{
+//		Textures[name] = loadTextureFromFile(file, alpha);
+//	}
+//	
+//	return Textures[name];
+//}
 
 Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 {
@@ -81,12 +112,17 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 
 void ResourceManager::clear()
 {
-	for (auto item : Shaders)
+	auto& shaders = getShadersMap();
+	auto& textures = getTexturesMap();
+
+	for (auto item : shaders)
 	{
 		glDeleteProgram(item.second.ID);
 	}
-	for (auto item : Textures)
+	for (auto item : textures)
 	{
 		glDeleteTextures(1, &item.second.ID);
 	}
+	shaders.clear();
+	textures.clear();
 }

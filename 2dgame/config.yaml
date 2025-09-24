@@ -1,6 +1,6 @@
-bitmap: assets/flowers.png
+bitmap: assets/map_inputs/room.png
 
-pattern_size: 4
+pattern_size: 3
 map_width: 10
 map_height: 10
 

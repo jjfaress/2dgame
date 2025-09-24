@@ -1,12 +1,12 @@
 #include "ConfigLoader.h"
 #include <iostream>
 #include "stb_image.h"
+#include "ResourceManager.h"
 
 ConfigLoader::ConfigLoader(const char* path)
 {
 	try
 	{
-
 		YAML::Node config = YAML::LoadFile(path);
 
 		if (config["pattern_size"])
@@ -16,7 +16,7 @@ ConfigLoader::ConfigLoader(const char* path)
 		else
 		{
 			throw std::runtime_error(
-				std::string("Pattern size not defined in ") + path);
+				std::string("Error: Pattern size not defined in ") + path);
 		}
 		if (config["map_width"] && config["map_height"])
 		{
@@ -26,15 +26,25 @@ ConfigLoader::ConfigLoader(const char* path)
 		else
 		{
 			throw std::runtime_error(
-				std::string("Error: map dimensions not fully defined in ") + path);
+				std::string("Error: Map dimensions not fully defined in ") + path);
 		}
 		if (config["tile_data"])
 		{
 			loadTileData(config["tile_data"]);
 		}
+		else
+		{
+			throw std::runtime_error(
+				std::string("Error: Tile data not defined in ") + path);
+		}
 		if (config["bitmap"])
 		{
 			loadBitmap(config["bitmap"].as<std::string>().c_str());
+		}
+		else
+		{
+			throw std::runtime_error(
+				std::string("Error: Bitmap not defined in ") + path);
 		}
 	}
 	catch (const YAML::Exception& e)
@@ -59,9 +69,10 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 	{
 		glm::vec4 color = pair.second["bitColor"].as<glm::vec4>();
 		int id = pair.first.as<int>();
-		std::string texture = pair.second["texture"].as<std::string>();
 		this->tileIds[color] = id;
-		this->textures[id] = texture;
+		std::string texName = pair.second["texture"].as<std::string>();
+		//ResourceManager::loadTexture(texName.c_str(), true, texName);
+		this->textures[id] = texName;
 		this->tileTypes.push_back(id);
 	}
 }

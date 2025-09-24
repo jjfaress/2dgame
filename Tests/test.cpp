@@ -1,7 +1,26 @@
 #include "pch.h"
-#include <benchmark/benchmark.h>
-//#include "../2dgame/Globals.h"
 #include "../2dgame/WFCMap.h"
+#include "../2dgame/Globals.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+struct GLTestContext {
+	GLFWwindow* window = nullptr;
+	GLTestContext()
+	{
+		glfwInit();
+		window = glfwCreateWindow(800, 600, "Test", nullptr, nullptr);
+		glfwMakeContextCurrent(window);
+		gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	}
+	~GLTestContext()
+	{
+		glfwDestroyWindow(window);
+		glfwTerminate();
+	}
+};
+
+static GLTestContext glContext;
 
 TEST(BASE, CONSTRUCT)
 {
@@ -22,44 +41,16 @@ TEST(BASE, GENERATE)
 {
 	WFCMap* map = new WFCMap(10, 10, 12345);
 	map->init();
-	//EXPECT_TRUE(map->initialized);
+	EXPECT_TRUE(map->initialized);
 	map->generate();
 	EXPECT_TRUE(map->isReady);
 	delete map;
 }
 
-static void BM_CONSTRUCTION(benchmark::State& state)
+int main(int argc, char** argv)
 {
-	for (auto _ : state)
-	{
-		WFCMap* map = new WFCMap(10, 10, 12345);
-		delete map;
-	}
+	(void)config;
+
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
-
-static void BM_INITIALIZATION(benchmark::State& state)
-{
-	WFCMap* map = new WFCMap(10, 10, 12345);
-	for (auto _ : state)
-	{
-		map->init();
-	}
-	delete map;
-}
-
-static void BM_GENERATION(benchmark::State& state)
-{
-	WFCMap* map = new WFCMap(10, 10, 12345);
-	map->init();
-	for (auto _ : state)
-	{
-		map->generate();
-	}
-	delete map;
-}
-
-BENCHMARK(BM_CONSTRUCTION);
-BENCHMARK(BM_INITIALIZATION);
-BENCHMARK(BM_GENERATION);
-
-BENCHMARK_MAIN();
