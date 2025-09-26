@@ -75,18 +75,6 @@ Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string
 	return getTexturesMap()[name];
 }
 
-
-
-//Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string name)
-//{
-//	if (Textures.find(name) == Textures.end())
-//	{
-//		Textures[name] = loadTextureFromFile(file, alpha);
-//	}
-//	
-//	return Textures[name];
-//}
-
 Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 {
 	Texture2D texture;

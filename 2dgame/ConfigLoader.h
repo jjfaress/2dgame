@@ -97,6 +97,7 @@ using neighbor = int;
 class ConfigLoader
 {
 public:
+	unsigned int seed;
 	int n = 3;
 	int mapWidth, mapHeight;
 	std::vector<int> tileTypes;

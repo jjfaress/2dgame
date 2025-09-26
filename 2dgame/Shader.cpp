@@ -11,7 +11,6 @@ Shader& Shader::use()
 void Shader::compile(const char* vertexSource, const char* fragmentSource)
 {
 	unsigned int vertShader, fragShader;
-	//std::cout << vertexSource;
 	vertShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertShader);

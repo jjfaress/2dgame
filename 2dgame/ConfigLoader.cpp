@@ -18,6 +18,15 @@ ConfigLoader::ConfigLoader(const char* path)
 			throw std::runtime_error(
 				std::string("Error: Pattern size not defined in ") + path);
 		}
+		if (config["seed"])
+		{
+			this->seed = config["seed"].as<unsigned int>();
+		}
+		//else
+		//{
+		//	throw std::runtime_error(
+		//		std::string("Error: Seed not defined in ") + path);
+		//}
 		if (config["map_width"] && config["map_height"])
 		{
 			this->mapWidth = config["map_width"].as<int>();
@@ -80,15 +89,15 @@ void ConfigLoader::loadTileData(const YAML::Node& node)
 
 void ConfigLoader::loadBitmap(const char* file)
 {
-	static glm::ivec2 directions[] = {
+	std::vector<glm::ivec2> directions = {
 		glm::ivec2(0, 1), //north
-		//glm::ivec2(1, 1), //north east
+		glm::ivec2(1, 1), //north east
 		glm::ivec2(1, 0), //east
-		//glm::ivec2(1, -1), //south east
+		glm::ivec2(1, -1), //south east
 		glm::ivec2(0, -1), //south
-		//glm::ivec2(-1, -1), //south west
+		glm::ivec2(-1, -1), //south west
 		glm::ivec2(-1, 0), //west
-		//glm::ivec2(-1, 1) //north west
+		glm::ivec2(-1, 1) //north west
 	};
 
 	int width, height, channels;
@@ -138,7 +147,7 @@ void ConfigLoader::loadBitmap(const char* file)
 			}
 
 
-			for (int dir = 0; dir < 4; dir++)
+			for (int dir = 0; dir < directions.size(); dir++)
 			{
 				glm::ivec2 direction = directions[dir];
 				glm::ivec2 stride = glm::ivec2(x, y) + (direction * this->n);
@@ -161,6 +170,16 @@ void ConfigLoader::loadBitmap(const char* file)
 			}
 		}
 	}
+	//for (auto& source : this->validNeighbors)
+	//{
+	//	int sourceId = source.first;
+	//	for (auto& dir : source.second)
+	//	{
+	//		int dirId = dir.first;
+	//		std::unordered_set<int> neighbors = dir.second;
+	//		//std::cout << sourceId << ", " << dirId << ": " << neighbors.size() << "\n";
+	//	}
+	//}
 }
 
 Pattern ConfigLoader::extractPattern(const Grid<int>& bitmap, int x, int y)

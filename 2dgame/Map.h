@@ -6,29 +6,21 @@
 template <typename T>
 using Grid = std::vector<std::vector<T>>;
 
-struct Tile {
-	glm::vec2 position;
-	const char* texture = nullptr;
-	Tile(glm::vec2 pos) : position(pos) {}
-	virtual ~Tile() = default;
-};
-
 template <typename T>
 class Map {
 public:
 	int WIDTH, HEIGHT;
-	Map(int width, int height) :
+	Map(int width, int height, SpriteRenderer& renderer) :
 		WIDTH(width),
-		HEIGHT(height)
-		//config(config)
+		HEIGHT(height),
+		renderer(&renderer)
 	{
 	}
 	virtual ~Map() = default;
 	virtual void init() = 0;
-	virtual void draw(SpriteRenderer& renderer) = 0;
-
-private:
+	virtual void draw() = 0;
 
 protected:
+	SpriteRenderer* renderer;
 	Grid<T> grid;
 };

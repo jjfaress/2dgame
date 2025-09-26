@@ -2,4 +2,3 @@
 #include "ConfigLoader.h"
 
 extern ConfigLoader& config;
-

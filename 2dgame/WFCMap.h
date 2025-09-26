@@ -57,20 +57,18 @@ public:
 	bool isReady = false;
 	WFCMap(int width,
 		int height,
-		unsigned int seed);
+		unsigned int seed,
+		SpriteRenderer& renderer);
 	~WFCMap() override;
 	void generate();
-	bool stepGenerate(SpriteRenderer& renderer);
+	void stepGenerate();
 	void init() override;
-	void draw(SpriteRenderer& renderer);
+	void draw() override;
 
 private:
-
-	std::vector<Chunk> finalChunks;
+	std::mt19937 rng;
 	unsigned int seed;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;
-	void collapse(int x, int y, std::mt19937& rng, int& collapseCount);
-	void collapse(int x, int y, unsigned int& seed, int& collapseCount);
+	void collapse(int x, int y, int& collapseCount);
 	void propagate(int x, int y, int& collapseCount);
-	//void postProcess() override;
 };

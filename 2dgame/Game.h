@@ -14,8 +14,7 @@ public:
 	GameState State;
 	bool Keys[1024];
 	uint WIDTH, HEIGHT;
-
-	WFCMap level;
+	WFCMap* level;
 
 	Game(uint screen_width, uint screen_height);
 	~Game();

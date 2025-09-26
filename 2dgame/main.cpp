@@ -3,6 +3,9 @@
 #include "Game.h"
 #include "Globals.h"
 #include "ResourceManager.h"
+#include "WFCMap.h"
+#include <glm/glm.hpp>
+
 
 
 int SCREEN_WIDTH = 800;
@@ -11,7 +14,6 @@ int SCREEN_HEIGHT = 600;
 void framebufferSize(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
-Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 int main()
 {
@@ -38,10 +40,14 @@ int main()
 		return -1;
 	}
 
+
+
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
+	Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
+
 	game.init();
 	float deltaTime = 0.0f;
 	float lastFrame = 0.0f;
@@ -54,7 +60,6 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		game.render();
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

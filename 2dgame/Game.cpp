@@ -1,39 +1,39 @@
 #include "Game.h"
 #include "Globals.h"
 #include "ResourceManager.h"
-#include "SpriteRenderer.h"
 
-SpriteRenderer* renderer;
+//SpriteRenderer* renderer;
 
-
-Game::Game(uint screen_width, uint screen_height) : 
-	WIDTH(screen_width), 
-	HEIGHT(screen_height),
-	level(config.mapHeight, config.mapHeight, static_cast<uint>(std::time(nullptr)))
+Game::Game(uint screen_width, uint screen_height) :
+	WIDTH(screen_width),
+	HEIGHT(screen_height)
 {
-}
-
-Game::~Game()
-{
-	delete renderer;
-}
-
-void Game::init()
-{
-	level.init();
 	ResourceManager::loadShader("spriteShader.vert", "spriteShader.frag", "sprite");
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->WIDTH), static_cast<float>(this->HEIGHT), 0.0f);
 	ResourceManager::getShader("sprite").use().setInt("image", 0);
 	ResourceManager::getShader("sprite").setMat4("projection", projection);
 	Shader spriteShader = ResourceManager::getShader("sprite");
-	renderer = new SpriteRenderer(spriteShader);
-	level.generate();
+
+	level = new WFCMap(
+		config.mapWidth,
+		config.mapHeight,
+		config.seed ? config.seed : static_cast<unsigned int>(std::time(nullptr)), 
+		*new SpriteRenderer(spriteShader));
+}
+
+Game::~Game()
+{
+	//delete renderer;
+}
+
+void Game::init()
+{
+	level->init();
 }
 
 void Game::render()
 {
-	level.draw(*renderer);
-	
+	level->stepGenerate();
 }
 
 void Game::processInput()

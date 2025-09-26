@@ -1,8 +1,10 @@
-bitmap: assets/map_inputs/room.png
+bitmap: assets/map_inputs/island.png
 
-pattern_size: 3
-map_width: 10
-map_height: 10
+pattern_size: 2
+map_width: 30
+map_height: 30
+
+# seed: 1758826184
 
 tile_data:
   0:
