@@ -5,13 +5,9 @@
 #include "stb_image.h"
 #include <glad/glad.h>
 
-//std::map<std::string, Texture2D> ResourceManager::Textures;
-//std::map<std::string, Shader> ResourceManager::Shaders;
-
 Shader ResourceManager::getShader(std::string name)
 {
 	return getShadersMap()[name];
-	//return Shaders[name];
 }
 
 std::map<std::string, Shader>& ResourceManager::getShadersMap()
@@ -20,14 +16,11 @@ std::map<std::string, Shader>& ResourceManager::getShadersMap()
 	return shaders;
 }
 
-
-
 Shader ResourceManager::loadShader(const char* vertexSource, const char* fragmentSource, std::string name)
 {
 	getShadersMap()[name] = loadShaderFromFile(vertexSource, fragmentSource);
 	return getShadersMap()[name];
 }
-
 
 Shader ResourceManager::loadShaderFromFile(const char* vertexSource, const char* fragmentSource)
 {
@@ -57,11 +50,8 @@ Shader ResourceManager::loadShaderFromFile(const char* vertexSource, const char*
 
 Texture2D ResourceManager::getTexture(std::string name)
 {
-	//return Textures[name];
 	return getTexturesMap()[name];
 }
-
-
 
 std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
 {
@@ -78,11 +68,6 @@ Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string
 Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 {
 	Texture2D texture;
-	if (alpha)
-	{
-		texture.internalFormat = GL_RGBA;
-		texture.imageFormat = GL_RGBA;
-	}
 
 	int width, height, channels;
 	unsigned char* data = stbi_load(file, &width, &height, &channels, 0);
@@ -92,6 +77,18 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 	}
 	else
 	{
+		if (channels >= 3)
+		{
+			// wants to load image in bgra for some reason. need to fix
+			for (int i = 0; i < width * height * 4; i += 4)
+			{
+				unsigned char temp = data[i];
+				data[i] = data[i + 2];
+				data[i + 2] = temp;
+			}
+		}
+
+
 		texture.generate(width, height, data);
 		stbi_image_free(data);
 		return texture;

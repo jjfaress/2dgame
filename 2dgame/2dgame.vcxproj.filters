@@ -53,10 +53,13 @@
     <ClCompile Include="noiseutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PixelRenderer.cpp">
+    <ClCompile Include="Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Globals.cpp">
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,10 +97,13 @@
     <ClInclude Include="noiseutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PixelRenderer.h">
+    <ClInclude Include="Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Globals.h">
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,5 +118,11 @@
       <Filter>config</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="particle.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="particle.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

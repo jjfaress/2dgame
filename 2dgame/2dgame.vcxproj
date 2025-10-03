@@ -144,13 +144,14 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConfigLoader.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="noiseutils.cpp" />
-    <ClCompile Include="PixelRenderer.cpp" />
+    <ClCompile Include="Particle.cpp" />
     <ClCompile Include="WFCMap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -159,13 +160,14 @@
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ConfigLoader.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="noiseutils.h" />
-    <ClInclude Include="PixelRenderer.h" />
+    <ClInclude Include="Particle.h" />
     <ClInclude Include="WFCMap.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Shader.h" />
@@ -176,6 +178,8 @@
   <ItemGroup>
     <None Include="config.yaml" />
     <None Include="packages.config" />
+    <None Include="particle.frag" />
+    <None Include="particle.vert" />
     <None Include="spriteShader.frag" />
     <None Include="spriteShader.vert" />
   </ItemGroup>

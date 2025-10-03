@@ -1,10 +1,10 @@
-bitmap: assets/map_inputs/island.png
+bitmap: assets/map_inputs/lake.png
 
 pattern_size: 2
-map_width: 30
-map_height: 30
+map_width: 50
+map_height: 50
 
-# seed: 1758826184
+
 
 tile_data:
   0:

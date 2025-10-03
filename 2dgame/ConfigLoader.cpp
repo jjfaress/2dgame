@@ -22,11 +22,6 @@ ConfigLoader::ConfigLoader(const char* path)
 		{
 			this->seed = config["seed"].as<unsigned int>();
 		}
-		//else
-		//{
-		//	throw std::runtime_error(
-		//		std::string("Error: Seed not defined in ") + path);
-		//}
 		if (config["map_width"] && config["map_height"])
 		{
 			this->mapWidth = config["map_width"].as<int>();
@@ -170,16 +165,6 @@ void ConfigLoader::loadBitmap(const char* file)
 			}
 		}
 	}
-	//for (auto& source : this->validNeighbors)
-	//{
-	//	int sourceId = source.first;
-	//	for (auto& dir : source.second)
-	//	{
-	//		int dirId = dir.first;
-	//		std::unordered_set<int> neighbors = dir.second;
-	//		//std::cout << sourceId << ", " << dirId << ": " << neighbors.size() << "\n";
-	//	}
-	//}
 }
 
 Pattern ConfigLoader::extractPattern(const Grid<int>& bitmap, int x, int y)

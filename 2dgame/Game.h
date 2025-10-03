@@ -1,18 +1,22 @@
 #pragma once
 #include "WFCMap.h"
+#include <GLFW/glfw3.h>
+#include "Camera.h"
+#include "Particle.h"
 
 using uint = unsigned int;
 
 enum GameState {
-	GAME_ACTIVE,
-	GAME_MENU,
-	GAME_WIN
+	HUB,
+	DUNGEON,
+	MENU
 };
 
 class Game {
 public:
 	GameState State;
-	bool Keys[1024];
+	bool keys[512];
+	bool buttons[16];
 	uint WIDTH, HEIGHT;
 	WFCMap* level;
 
@@ -22,6 +26,11 @@ public:
 	void init();
 	void update(float dt);
 	void render();
-	void processInput();
+	void processInput(float dt);
 
+private:
+	ParticleEmitter* particles;
+	Camera* camera;
+	SpriteRenderer* renderer;
+	
 };

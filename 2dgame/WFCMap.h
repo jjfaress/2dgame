@@ -46,7 +46,6 @@ struct Chunk {
 	Chunk(glm::vec2 pos, std::vector<int> ent) : 
 		position(pos), 
 		entropy(ent) {}
-
 	void draw(SpriteRenderer& renderer);
 };
 

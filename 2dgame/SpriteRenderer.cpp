@@ -16,8 +16,9 @@ void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, glm::vec2
 {
 	this->shader.use();
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(position, 0.0f));
-	model = glm::scale(model, glm::vec3(size, 1.0f));
+	model = glm::translate(model, { position, 0.0f });
+	model = glm::scale(model, { (size * glm::vec2(texture.WIDTH, texture.HEIGHT)), 1.0f });
+	model = glm::rotate(model, rotate, { 0.0f, 0.0f, 1.0f });
 	this->shader.setVec3("spriteColor", color);
 	this->shader.setMat4("model", model);
 
@@ -26,7 +27,7 @@ void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, glm::vec2
 
 	glBindVertexArray(this->quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0); 
+	glBindVertexArray(0);
 }
 
 void SpriteRenderer::initRenderData()
@@ -42,11 +43,11 @@ void SpriteRenderer::initRenderData()
 		1.0f, 0.0f, 1.0f, 0.0f
 	};
 
-	unsigned int VBO;
+	unsigned int vertexBuffer;
 	glGenVertexArrays(1, &this->quadVAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &vertexBuffer);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glBindVertexArray(this->quadVAO);

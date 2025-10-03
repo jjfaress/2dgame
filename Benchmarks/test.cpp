@@ -68,7 +68,7 @@ static void BM_INITIALIZATION(benchmark::State& state)
 	}
 }
 
-static void BM_GENERATION(benchmark::State& state)
+static void BM_GENERATE(benchmark::State& state)
 {
 	int mapSize = static_cast<int>(state.range(0));
 	config.n = static_cast<int>(state.range(1));
@@ -94,7 +94,7 @@ BENCHMARK(BM_INITIALIZATION)
 ->RangeMultiplier(2)
 ->Range(8, 64)
 ->Complexity(benchmark::oAuto);
-BENCHMARK(BM_GENERATION)
+BENCHMARK(BM_GENERATE)
 ->RangeMultiplier(2)
 ->Ranges({{8, 64}, {2, 5}})
 ->Complexity(benchmark::oAuto);

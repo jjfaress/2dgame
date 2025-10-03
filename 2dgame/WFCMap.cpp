@@ -127,7 +127,15 @@ void WFCMap::collapse(int x, int y, int& collapseCount)
 	}
 	Chunk& chunk = this->grid[x][y];
 	this->eq.remove({ chunk.entropy.size(), chunk.position });
-	std::uniform_int_distribution<std::mt19937::result_type> poss(0, chunk.entropy.size() - 1);
+	//std::uniform_int_distribution<std::mt19937::result_type> poss(0, chunk.entropy.size() - 1);
+
+	std::vector<double> weights;
+	for (int& id : chunk.entropy)
+	{
+		weights.push_back(config.patterns[id].frequency);
+	}
+	std::discrete_distribution<int> poss(weights.begin(), weights.end());
+
 	int patternId = chunk.entropy[poss(rng)];
 	chunk.pattern = config.patterns[patternId];
 	chunk.collapsed = true;
@@ -141,7 +149,6 @@ void WFCMap::collapse(int x, int y, int& collapseCount)
 void WFCMap::propagate(int x, int y, int& collapseCount)
 {
 	std::queue<glm::ivec2> queue;
-	std::mutex qMutex;
 	queue.push(glm::ivec2(x, y));
 
 	std::vector<glm::ivec2> directions = {
@@ -173,10 +180,12 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 			Chunk& sourceChunk = this->grid[source.x][source.y];
 			Chunk& neighborChunk = this->grid[neighbor.x][neighbor.y];
 
-			if (this->grid[neighbor.x][neighbor.y].collapsed)
+			if (neighborChunk.collapsed)
 			{
 				continue;
 			}
+
+
 
 			std::vector<int>& neighborPoss = neighborChunk.entropy;
 			size_t originalEntropy = neighborPoss.size();
@@ -238,6 +247,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 
 			if (neighborPoss.size() != originalEntropy && !neighborChunk.collapsed)
 			{
+				
 				this->eq.remove({ originalEntropy, neighborChunk.position });
 				this->eq.push({ neighborPoss.size(), neighborChunk.position });
 				if (neighborPoss.size() == 1)
@@ -254,6 +264,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 	}
 }
 
+
 void WFCMap::draw()
 {
 	for (auto& row : this->grid)
@@ -268,18 +279,19 @@ void WFCMap::draw()
 
 void Chunk::draw(SpriteRenderer& renderer)
 {
-	float tileSize = 8.0;
+	float tileSize = 16.0;
 	float chunkSize = tileSize * config.n;
 	Grid<int>& pattern = this->pattern.tiles;
-
 	for (int x = 0; x < pattern.size(); x++)
 	{
 		for (int y = 0; y < pattern[0].size(); y++)
 		{
 			int tile = pattern[x][y];
-			const char* texture = config.textures[tile].c_str();
-			glm::vec2 tilePosition = (this->position * chunkSize) + glm::vec2(x * tileSize, y * tileSize);
-			renderer.drawSprite(ResourceManager::getTexture(texture), tilePosition, glm::vec2(tileSize));
+			const char* texName = config.textures[tile].c_str();
+			Texture2D texture = ResourceManager::getTexture(texName);
+			glm::vec2 tilePos = 
+				(this->position * chunkSize) + glm::vec2(x * tileSize, y * tileSize);
+			renderer.drawSprite(texture, tilePos, glm::vec2(0.25));
 		}
 	}
 }

@@ -4,8 +4,8 @@
 Texture2D::Texture2D() : 
 	WIDTH(0), 
 	HEIGHT(0), 
-	internalFormat(GL_BGRA), 
-	imageFormat(GL_BGRA), 
+	internalFormat(GL_RGBA), 
+	imageFormat(GL_RGBA), 
 	sWrap(GL_REPEAT), 
 	tWrap(GL_REPEAT), 
 	minFilter(GL_NEAREST), 

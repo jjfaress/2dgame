@@ -73,6 +73,24 @@ void Shader::setVec3(const char* name, const glm::vec3 val, bool useShader)
 	glUniform3f(glGetUniformLocation(this->ID, name), val.x, val.y, val.z);
 }
 
+void Shader::setVec2f(const char* name, const glm::vec2 val, bool useShader)
+{
+	if (useShader)
+	{
+		this->use();
+	}
+	glUniform2f(glGetUniformLocation(this->ID, name), val.x, val.y);
+}
+
+void Shader::setVec4f(const char* name, const glm::vec4 val, bool useShader)
+{
+	if (useShader)
+	{
+		this->use();
+	}
+	glUniform4f(glGetUniformLocation(this->ID, name), val.x, val.y, val.z, val.w);
+}
+
 void Shader::setMat4(const char* name, const glm::mat4 &mat, bool useShader)
 {
 	if (useShader)
