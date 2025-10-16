@@ -49,7 +49,7 @@ struct Chunk {
 	void draw(SpriteRenderer& renderer);
 };
 
-class WFCMap : public Map<Chunk>
+class WFCMap : public Map
 {
 public:
 	bool initialized = false;
@@ -65,6 +65,7 @@ public:
 	void draw() override;
 
 private:
+	Grid<Chunk> grid;
 	std::mt19937 rng;
 	unsigned int seed;
 	EntropyQueue<std::pair<int, glm::vec2>, std::vector<std::pair<int, glm::vec2>>, compare> eq;

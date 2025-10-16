@@ -6,21 +6,23 @@
 template <typename T>
 using Grid = std::vector<std::vector<T>>;
 
-template <typename T>
+
 class Map {
 public:
-	int WIDTH, HEIGHT;
-	Map(int width, int height, SpriteRenderer& renderer) :
+	int32_t WIDTH, HEIGHT;
+	Map(int32_t width, int32_t height, SpriteRenderer& renderer) :
 		WIDTH(width),
 		HEIGHT(height),
 		renderer(&renderer)
-	{
-	}
+	{}
+
+	Map(SpriteRenderer& renderer) : renderer(&renderer) {}
+
 	virtual ~Map() = default;
 	virtual void init() = 0;
 	virtual void draw() = 0;
 
 protected:
 	SpriteRenderer* renderer;
-	Grid<T> grid;
+
 };

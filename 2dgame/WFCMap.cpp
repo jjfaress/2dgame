@@ -35,7 +35,6 @@ void WFCMap::init()
 	for (const auto& type : config.tileTypes)
 	{
 		ResourceManager::loadTexture(("assets/" + config.textures[type]).c_str(),
-			false,
 			config.textures[type]);
 	}
 	this->initialized = true;
@@ -43,7 +42,6 @@ void WFCMap::init()
 
 void WFCMap::generate()
 {
-	SpriteRenderer* renderer = nullptr;
 	std::uniform_int_distribution<std::mt19937::result_type> disX(0, this->WIDTH - 1);
 	std::uniform_int_distribution<std::mt19937::result_type> disY(0, this->HEIGHT - 1);
 
@@ -124,6 +122,7 @@ void WFCMap::collapse(int x, int y, int& collapseCount)
 	{
 		std::cerr << "Warning: Invalid collapse attempt at (" << x << ", " << y << ")\n";
 		std::cout << "collapsed: " << this->grid[x][y].collapsed << ", entropy: " << this->grid[x][y].entropy.size() << "\n";
+		return;
 	}
 	Chunk& chunk = this->grid[x][y];
 	this->eq.remove({ chunk.entropy.size(), chunk.position });
@@ -233,6 +232,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 						return validNeighbors.find(pattern) != validNeighbors.end();
 					}
 				);
+
 				if (validCount > 0)
 				{
 					neighborPoss.erase(
@@ -247,7 +247,7 @@ void WFCMap::propagate(int x, int y, int& collapseCount)
 
 			if (neighborPoss.size() != originalEntropy && !neighborChunk.collapsed)
 			{
-				
+
 				this->eq.remove({ originalEntropy, neighborChunk.position });
 				this->eq.push({ neighborPoss.size(), neighborChunk.position });
 				if (neighborPoss.size() == 1)
@@ -291,7 +291,7 @@ void Chunk::draw(SpriteRenderer& renderer)
 			Texture2D texture = ResourceManager::getTexture(texName);
 			glm::vec2 tilePos = 
 				(this->position * chunkSize) + glm::vec2(x * tileSize, y * tileSize);
-			renderer.drawSprite(texture, tilePos, glm::vec2(0.25));
+			renderer.drawSprite(texture, tilePos, glm::vec2(0.125));
 		}
 	}
 }

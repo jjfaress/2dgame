@@ -4,7 +4,7 @@ pattern_size: 2
 map_width: 50
 map_height: 50
 
-
+seed: 12381664
 
 tile_data:
   0:

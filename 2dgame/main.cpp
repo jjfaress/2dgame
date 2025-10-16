@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Game.h"
-//#include "Globals.h"
 #include "ResourceManager.h"
 #include "WFCMap.h"
 #include <glm/glm.hpp>
@@ -41,9 +40,9 @@ int main()
 		return -1;
 	}
 
-	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); 
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -55,8 +54,8 @@ int main()
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		game->processInput(deltaTime);
 		glClear(GL_COLOR_BUFFER_BIT);
+		game->processInput(deltaTime);
 		game->render();
 		glfwSwapBuffers(window);
 		glfwPollEvents();

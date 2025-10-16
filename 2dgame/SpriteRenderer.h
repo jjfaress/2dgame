@@ -14,6 +14,7 @@ public:
 		glm::vec2 size = glm::vec2(1.0f),
 		float rotate = 0.0f, 
 		glm::vec3 color = glm::vec3(1.0f));
+	void setShader(Shader& shader);
 
 private:
 	Shader shader;

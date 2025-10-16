@@ -18,7 +18,10 @@ std::map<std::string, Shader>& ResourceManager::getShadersMap()
 
 Shader ResourceManager::loadShader(const char* vertexSource, const char* fragmentSource, std::string name)
 {
-	getShadersMap()[name] = loadShaderFromFile(vertexSource, fragmentSource);
+	if (getShadersMap().find(name) == getShadersMap().end())
+	{
+		getShadersMap()[name] = loadShaderFromFile(vertexSource, fragmentSource);
+	}
 	return getShadersMap()[name];
 }
 
@@ -59,13 +62,16 @@ std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
 	return textures;
 }
 
-Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string name)
+Texture2D ResourceManager::loadTexture(const char* file, std::string name)
 {
-	getTexturesMap()[name] = loadTextureFromFile(file, alpha);
+	if (getTexturesMap().find(name) == getTexturesMap().end())
+	{
+		getTexturesMap()[name] = loadTextureFromFile(file);
+	}
 	return getTexturesMap()[name];
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
+Texture2D ResourceManager::loadTextureFromFile(const char* file)
 {
 	Texture2D texture;
 
@@ -77,18 +83,6 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
 	}
 	else
 	{
-		if (channels >= 3)
-		{
-			// wants to load image in bgra for some reason. need to fix
-			for (int i = 0; i < width * height * 4; i += 4)
-			{
-				unsigned char temp = data[i];
-				data[i] = data[i + 2];
-				data[i + 2] = temp;
-			}
-		}
-
-
 		texture.generate(width, height, data);
 		stbi_image_free(data);
 		return texture;

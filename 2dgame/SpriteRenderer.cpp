@@ -57,3 +57,8 @@ void SpriteRenderer::initRenderData()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
+
+void SpriteRenderer::setShader(Shader& shader)
+{
+	this->shader = shader;
+}

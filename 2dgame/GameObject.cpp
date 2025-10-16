@@ -28,5 +28,5 @@ GameObject::GameObject(glm::vec2 position, glm::vec2 size, Texture2D sprite, glm
 
 void GameObject::draw(SpriteRenderer& renderer)
 {
-	renderer.drawSprite(this->sprite, this->position, this->size, this->rotation, this->color);
+	//renderer.drawSprite(this->sprite, this->position, this->size, this->rotation, this->color);
 }
