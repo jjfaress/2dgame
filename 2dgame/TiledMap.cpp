@@ -43,14 +43,20 @@ void TiledMap::parseObjects(std::vector<tson::Object>& objects)
 			box.right = obj.getSize().x;
 			box.bottom = obj.getSize().y;
 			this->collisions.push_back(box);
-
+		}
+		else if (obj.getType() == "POI")
+		{
+			this->POIs[obj.getName()] = glm::vec2(
+				std::floorf(obj.getPosition().x),
+				std::floorf(obj.getPosition().y)
+			);
 		}
 	}
 }
 
-std::vector<Layer> TiledMap::parseLayers(std::vector<tson::Layer>& layers)
+std::vector<tson::Layer> TiledMap::parseLayers(std::vector<tson::Layer>& layers)
 {
-	std::vector<Layer> newLayers;
+	std::vector<tson::Layer> newLayers;
 	for (auto& layer : layers)
 	{
 		if (layer.getTypeStr() == "objectgroup")
@@ -58,33 +64,7 @@ std::vector<Layer> TiledMap::parseLayers(std::vector<tson::Layer>& layers)
 			parseObjects(layer.getObjects());
 			continue;
 		}
-		std::vector<uint32_t> data = layer.getData();
-		int layerWidth = layer.getSize().x;
-		int layerHeight = layer.getSize().y;
-		for (int y = 0; y < layerHeight; y++)
-		{
-			for (int x = 0; x < layerWidth; x++)
-			{
-				int idx = (y * layerWidth) + x;
-				if (data[idx] != 0)
-				{
-					// ------------------------------   why    ---------------
-					int imageHeight = this->tiles[data[idx] - 1].getImageSize().y;
-					if (imageHeight != 32)
-					{
-						int newY = y - ((imageHeight / 32) - 1);
-						int newIdx = (newY * layerWidth) + x;
-						data[newIdx] = data[idx];
-						data[idx] = 0;
-					}
-				}
-			}
-		}
-		Layer newLayer;
-		newLayer.width = layerWidth;
-		newLayer.height = layerHeight;
-		newLayer.data = data;
-		newLayers.push_back(newLayer);
+		newLayers.push_back(layer);
 	}
 	return newLayers;
 }
@@ -97,19 +77,19 @@ void TiledMap::draw()
 {
 	for (const auto& layer : this->layers)
 	{
-		std::vector<uint32_t> data = layer.data;
-		for (int y = 0; y < layer.height; y++)
+		std::vector<uint32_t> data = layer.getData();
+		for (int y = 0; y < layer.getSize().y; y++)
 		{
-			for (int x = 0; x < layer.width; x++)
+			for (int x = 0; x < layer.getSize().x; x++)
 			{
-				int idx = (y * layer.width) + x;
+				int idx = (y * layer.getSize().x) + x;
 				if (data[idx] == 0) continue;
 				this->renderer->drawSprite(
 					ResourceManager::getTexture(std::to_string(data[idx])),
-					glm::vec2((x * this->tileWidth), (y * this->tileHeight))
+					glm::vec2((x * this->tileWidth), (y * this->tileHeight)),
+					BL
 				);
 			}
 		}
-
 	}
 }

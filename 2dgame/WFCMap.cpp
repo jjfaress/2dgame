@@ -291,7 +291,7 @@ void Chunk::draw(SpriteRenderer& renderer)
 			Texture2D texture = ResourceManager::getTexture(texName);
 			glm::vec2 tilePos = 
 				(this->position * chunkSize) + glm::vec2(x * tileSize, y * tileSize);
-			renderer.drawSprite(texture, tilePos, glm::vec2(0.125));
+			renderer.drawSprite(texture, tilePos, TL, glm::vec2(0.125));
 		}
 	}
 }

@@ -10,9 +10,6 @@ Game::Game(uint screen_width, uint screen_height) :
 	ResourceManager::getShader("sprite").use().setInt("image", 0);
 	Shader spriteShader = ResourceManager::getShader("sprite");
 	this->renderer = new SpriteRenderer(spriteShader);
-	std::string spriteDir("assets/sprites/");
-	std::string mapPath = spriteDir + std::string("map.json");
-	this->level = new TiledMap(mapPath, spriteDir, *this->renderer);
 }
 
 Game::~Game()
@@ -24,8 +21,12 @@ Game::~Game()
 
 void Game::init()
 {
-
-
+	std::string spriteDir("assets/sprites/");	
+	std::string mapPath(spriteDir + "map.json");
+	this->level = new TiledMap(mapPath, spriteDir, *this->renderer);
+	this->player = new Player(
+		this->level->POIs["playerSpawn"], 
+		ResourceManager::loadTexture("assets/sprites/cat.png", "cat"));
 }
 
 void Game::render()
@@ -36,7 +37,7 @@ void Game::render()
 		Shader spriteShader = ResourceManager::getShader("sprite");
 		spriteShader.setMat4("projection", this->camera->getProjectionMatrix());
 		this->level->draw();
-
+		//this->player->draw(*this->renderer);
 		break;
 	}
 }

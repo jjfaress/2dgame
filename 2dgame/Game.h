@@ -2,6 +2,7 @@
 #include "TiledMap.h"
 #include <GLFW/glfw3.h>
 #include "Camera.h"
+#include "Player.h"
 
 using uint = unsigned int;
 
@@ -29,6 +30,7 @@ public:
 	void processInput(float dt);
 
 private:
+	Player* player;
 	Camera* camera;
 	SpriteRenderer* renderer;
 };

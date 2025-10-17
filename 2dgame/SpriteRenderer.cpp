@@ -12,8 +12,37 @@ SpriteRenderer::~SpriteRenderer()
 	glDeleteVertexArrays(1, &this->quadVAO);
 }
 
-void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, glm::vec2 size, float rotate, glm::vec3 color)
+void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, Origin origin, glm::vec2 size, float rotate, glm::vec3 color)
 {
+	switch (origin)
+	{
+	case TL:
+		break;
+	case T:
+		position -= glm::vec2(std::floorf(texture.WIDTH / 2), 0);
+		break;
+	case TR:
+		position -= glm::vec2(texture.WIDTH, 0);
+		break;
+	case R:
+		position -= glm::vec2(texture.HEIGHT, std::floorf(texture.WIDTH / 2));
+		break;
+	case BR:
+		position -= glm::vec2(texture.WIDTH, texture.HEIGHT);
+		break;
+	case B:
+		position -= glm::vec2(std::floorf(texture.WIDTH / 2), texture.HEIGHT);
+		break;
+	case BL:
+		position -= glm::vec2(0, texture.HEIGHT);
+		break;
+	case L:
+		position -= glm::vec2(0, std::floorf(texture.HEIGHT / 2));
+		break;
+	case C:
+		position -= glm::vec2(std::floorf(texture.WIDTH / 2), std::floorf(texture.HEIGHT / 2));
+		break;
+	}
 	this->shader.use();
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, { position, 0.0f });

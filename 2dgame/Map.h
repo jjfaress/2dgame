@@ -6,7 +6,6 @@
 template <typename T>
 using Grid = std::vector<std::vector<T>>;
 
-
 class Map {
 public:
 	int32_t WIDTH, HEIGHT;

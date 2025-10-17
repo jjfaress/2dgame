@@ -1,11 +1,10 @@
 #pragma once
-#include <glm/glm.hpp>
-#include "Texture.h"
+#include "GameObject.h"
 
-class Player {
+class Player : public GameObject {
 public:
-	glm::vec2 position = glm::vec2(0);
-	Texture2D sprite;
 	Player();
-	Player(glm::vec2 pos);
+	Player(glm::vec2 pos, Texture2D sprite);
+
+	void draw(SpriteRenderer& renderer) override;
 };

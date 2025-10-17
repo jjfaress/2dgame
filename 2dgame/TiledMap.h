@@ -13,20 +13,21 @@ struct Layer {
 
 class TiledMap : public Map {
 public:
+	std::unordered_map<std::string, glm::vec2> POIs;
+
 	TiledMap(std::string& mapPath, 
 		std::string& spriteDir, 
 		SpriteRenderer& renderer);
 	void init() override;
 	void draw() override;
-
 private:
 	int32_t tileWidth, tileHeight;
-	std::vector<Layer> layers;
+	std::vector<tson::Layer> layers;
 	std::vector<tson::Tile> tiles;
 	std::vector<CollisionBox> collisions;
 
 	std::vector<tson::Tile> parseTiles(tson::Tileset* tileset);
 	void parseObjects(std::vector<tson::Object>& objects);
-	std::vector<Layer> parseLayers(std::vector<tson::Layer>& layers);
+	std::vector<tson::Layer> parseLayers(std::vector<tson::Layer>& layers);
 };
 
