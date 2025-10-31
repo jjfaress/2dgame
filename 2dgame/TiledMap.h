@@ -1,33 +1,57 @@
 #pragma once
-#include "Map.h"
 #include "tileson.hpp"
+#include "SpriteRenderer.h"
+#include "Collision.h"
+#include <variant>
 
-struct CollisionBox {
-	float top, bottom, left, right;
-};
 
-struct Layer {
-	uint32_t width, height;
-	std::vector<uint32_t> data;
-};
+namespace TiledMap {
 
-class TiledMap : public Map {
-public:
-	std::unordered_map<std::string, glm::vec2> POIs;
+	using namespace Collision;
+	using CollisionObject = std::variant<
+		CollisionBox<RECTANGLE>,
+		CollisionBox<CIRCLE>,
+		CollisionBox<POLYGON>,
+		CollisionBox<POINT>,
+		CollisionBox<ELLIPSE>
+	>;
 
-	TiledMap(std::string& mapPath, 
-		std::string& spriteDir, 
+	struct Temp {
+		int32_t width, height, tileWidth, tileHeight;
+		std::vector<tson::Layer> layers;
+		std::vector<CollisionObject> worldCollisions;
+		std::unordered_map<std::string, glm::vec2> POIs;
+		std::unordered_map<int, std::vector<tson::Object>> tileObjects;
+		Texture2D texture;
+	};
+
+	struct MapData {
+		Texture2D texture;
+		std::vector<CollisionObject> worldCollisions;
+		std::unordered_map<std::string, glm::vec2> POIs;
+	};
+
+	void parseTiles(
+		tson::Tileset* tileset,
+		const std::string& spriteDir,
+		Temp& mapData);
+
+	void parseLayers(
+		std::vector<tson::Layer>& layers,
+		Temp& mapData);
+
+	std::vector<CollisionObject> parseTileObjects(
+		const std::vector<uint32_t>& layerData,
+		Temp& mapData);
+
+	CollisionObject buildObject(tson::Object& object);
+
+	void drawToFrameBuffer(
+		Temp& mapData, 
 		SpriteRenderer& renderer);
-	void init() override;
-	void draw() override;
-private:
-	int32_t tileWidth, tileHeight;
-	std::vector<tson::Layer> layers;
-	std::vector<tson::Tile> tiles;
-	std::vector<CollisionBox> collisions;
 
-	std::vector<tson::Tile> parseTiles(tson::Tileset* tileset);
-	void parseObjects(std::vector<tson::Object>& objects);
-	std::vector<tson::Layer> parseLayers(std::vector<tson::Layer>& layers);
-};
-
+	MapData loadMap(
+		const std::string& mapPath,
+		const std::string& spriteDir,
+		SpriteRenderer& renderer);
+}

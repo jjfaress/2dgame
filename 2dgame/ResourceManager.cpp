@@ -62,8 +62,9 @@ std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
 	return textures;
 }
 
-Texture2D ResourceManager::loadTexture(const char* file, std::string name)
+Texture2D ResourceManager::loadTexture(const char* file, std::string name, bool flip)
 {
+	stbi_set_flip_vertically_on_load(flip);
 	if (getTexturesMap().find(name) == getTexturesMap().end())
 	{
 		getTexturesMap()[name] = loadTextureFromFile(file);

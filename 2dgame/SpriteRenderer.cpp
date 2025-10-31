@@ -1,18 +1,23 @@
 #include "SpriteRenderer.h"
 #include <glad/glad.h>
 
-SpriteRenderer::SpriteRenderer(Shader& shader)
+void SpriteRenderer::init()
 {
-	this->shader = shader;
 	initRenderData();
 }
 
-SpriteRenderer::~SpriteRenderer()
+void SpriteRenderer::destroy()
 {
 	glDeleteVertexArrays(1, &this->quadVAO);
 }
 
-void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, Origin origin, glm::vec2 size, float rotate, glm::vec3 color)
+void SpriteRenderer::drawSprite(
+	Texture2D texture, 
+	glm::vec2 position, 
+	Origin origin, 
+	glm::vec2 size, 
+	float rotate, 
+	glm::vec3 color)
 {
 	switch (origin)
 	{
@@ -46,12 +51,19 @@ void SpriteRenderer::drawSprite(Texture2D texture, glm::vec2 position, Origin or
 	this->shader.use();
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, { position, 0.0f });
+
+	glm::vec2 spriteSize = size * glm::vec2(texture.WIDTH, texture.HEIGHT);
+	model = glm::translate(model, glm::vec3(spriteSize.x * 0.5f, spriteSize.y * 0.5f, 0.0f));
+	model = glm::rotate(model, rotate, { 0.0f, 0.0f, 1.0f });
+	model = glm::translate(model, glm::vec3(-spriteSize.x * 0.5f, -spriteSize.y * 0.5f, 0.0f));
+
+
 	model = glm::scale(model, { (size * glm::vec2(texture.WIDTH, texture.HEIGHT)), 1.0f });
 	model = glm::rotate(model, rotate, { 0.0f, 0.0f, 1.0f });
 	this->shader.setVec3("spriteColor", color);
 	this->shader.setMat4("model", model);
 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 	texture.bind();
 
 	glBindVertexArray(this->quadVAO);
@@ -85,6 +97,12 @@ void SpriteRenderer::initRenderData()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void SpriteRenderer::initFrameBufferData()
+{
+	unsigned int texture;
+	
 }
 
 void SpriteRenderer::setShader(Shader& shader)

@@ -7,7 +7,7 @@ class ResourceManager {
 public:
 	static Shader loadShader(const char* vertexSource, const char* fragmentSource, std::string name);
 	static Shader getShader(std::string name);
-	static Texture2D loadTexture(const char* file, std::string name);
+	static Texture2D loadTexture(const char* file, std::string name, bool flip = false);
 	static Texture2D getTexture(std::string name);
 	static void clear();
 

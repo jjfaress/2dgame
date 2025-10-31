@@ -12,25 +12,24 @@ enum GameState {
 	MENU
 };
 
-
 class Game {
 public:
-	GameState State;
-	bool keys[512];
-	bool buttons[16];
+	GameState State= HUB;
+	bool keys[512] = {};
+	bool buttons[16] = {};
 	uint WIDTH, HEIGHT;
-	TiledMap* level;
+	TiledMap::MapData level;
 
 	Game(uint screen_width, uint screen_height);
 	~Game();
 
 	void init();
 	void update(float dt);
-	void render();
+	void tick();
 	void processInput(float dt);
 
 private:
-	Player* player;
-	Camera* camera;
-	SpriteRenderer* renderer;
+	Character player;
+	Camera camera;
+	SpriteRenderer renderer;
 };

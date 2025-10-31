@@ -2,8 +2,8 @@
 #include <GLFW/glfw3.h>
 #include "Game.h"
 #include "ResourceManager.h"
-#include "WFCMap.h"
 #include <glm/glm.hpp>
+#include "TiledMap.h"
 
 int SCREEN_WIDTH = 480;
 int SCREEN_HEIGHT = 270;
@@ -12,7 +12,7 @@ void framebufferSize(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
-Game* game = nullptr;
+Game* gameInst = nullptr;
 
 int main()
 {
@@ -44,54 +44,54 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
-	game->init();
+	Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
+	gameInst = &game;
+
+	game.init();
 
 	float deltaTime = 0.0f;
 	float lastFrame = 0.0f;
-
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		glClear(GL_COLOR_BUFFER_BIT);
-		game->processInput(deltaTime);
-		game->render();
+		gameInst->processInput(deltaTime);
+		gameInst->tick();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	delete game;
 	ResourceManager::clear();
 	glfwTerminate();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-	if (game != nullptr && key >= 0 && key < 512)
+	if (gameInst != nullptr && key >= 0 && key < 512)
 	{
 		if (action == GLFW_PRESS)
 		{
-			game->keys[key] = true;
+			gameInst->keys[key] = true;
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			game->keys[key] = false;
+			gameInst->keys[key] = false;
 		}
 	}
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	if (game != nullptr && button >= 0 && button < 16)
+	if (gameInst != nullptr && button >= 0 && button < 16)
 	{
 		if (action == GLFW_PRESS)
 		{
-			game->buttons[button] = true;
+			gameInst->buttons[button] = true;
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			game->buttons[button] = false;
+			gameInst->buttons[button] = false;
 		}
 	}
 }
