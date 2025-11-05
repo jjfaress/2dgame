@@ -14,7 +14,8 @@ namespace TiledMap {
 		{
 			tson::Tile* tile = tileset->getTile(i);
 			std::string texName(tile->getImage().string());
-			ResourceManager::loadTexture((spriteDir + texName).c_str(), std::to_string(i), true);
+			ResourceManager::loadTexture(
+				(spriteDir + texName).c_str(), std::to_string(i), true);
 
 			auto& objects = tile->getObjectgroup().getObjects();
 			if (!objects.empty())
@@ -172,17 +173,13 @@ namespace TiledMap {
 				{
 					int idx = (y * mapData.width) + x;
 					if (data[idx] == 0) continue;
-
 					renderer.drawSprite(
 						ResourceManager::getTexture(std::to_string(data[idx])),
 						{ x * mapData.tileWidth, (mapData.height - y - 1) * mapData.tileHeight},
-						TL, {1,1}, 0
-					);
-					
+						TL);
 				}
 			}
 		}
-
 		glViewport(oldVp[0], oldVp[1], oldVp[2], oldVp[3]);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDeleteFramebuffers(1, &fbo);

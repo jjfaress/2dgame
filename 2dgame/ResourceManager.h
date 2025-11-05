@@ -3,12 +3,27 @@
 #include "Texture.h"
 #include <map>
 
+struct FrameData {
+	glm::vec2 uvTopLeft;
+	glm::vec2 uvBotRight;
+	glm::vec2 size;
+	float duration;
+};
+
+struct AnimationData {
+	Texture2D texture;
+	std::vector<FrameData> frames;
+	std::unordered_map<
+		std::string, std::pair<unsigned int, unsigned int>> tags;
+};
+
 class ResourceManager {
 public:
 	static Shader loadShader(const char* vertexSource, const char* fragmentSource, std::string name);
 	static Shader getShader(std::string name);
 	static Texture2D loadTexture(const char* file, std::string name, bool flip = false);
 	static Texture2D getTexture(std::string name);
+	static AnimationData parseSpriteSheet(std::string& filename, std::string& spriteDir);
 	static void clear();
 
 private:

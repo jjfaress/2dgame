@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "ResourceManager.h"
 #include <utility>
-
+#include <array>
 
 Game::Game(uint screen_width, uint screen_height) :
 	WIDTH(screen_width),
@@ -26,32 +26,27 @@ void Game::init()
 
 	std::string spriteDir("assets/sprites/");
 	std::string mapPath(spriteDir + "map.json");
+	this->player.init("cat.json", spriteDir);
 	this->level = TiledMap::loadMap(mapPath, spriteDir, this->renderer);
-
-	this->player.sprite =
-		ResourceManager::loadTexture((spriteDir + "cat.png").c_str(), "cat");
 	this->player.position = this->level.POIs["playerSpawn"];
+
+	this->collisions = Collision::buildSpacialGrid(this->level.worldCollisions, 32);
 
 }
 
-void Game::tick()
+void Game::update(float dt)
+{
+	this->player.update(dt);
+}
+
+void Game::render()
 {
 	switch (this->State)
 	{
 	case HUB:
-		glm::vec2 cameraPos =
-			this->player.position - glm::vec2(this->WIDTH / 2.0f, this->HEIGHT / 2.0f);
-		if (cameraPos != this->camera.lastPosition)
-		{
-			this->camera.setPosition(cameraPos);
-			this->renderer.shader.setMat4(
-				"projection", this->camera.getProjectionMatrix());
-			this->camera.lastPosition = cameraPos;
-		}
-
+		updateCamera();
 		this->renderer.drawSprite(this->level.texture, glm::vec2(0));
 		this->player.draw(this->renderer);
-
 
 		break;
 	}
@@ -60,30 +55,47 @@ void Game::tick()
 void Game::processInput(float dt)
 {
 	Character& player = this->player;
-	player.speed = 2.0;
 	if (this->keys[GLFW_KEY_ESCAPE])
 	{
 		glfwSetWindowShouldClose(glfwGetCurrentContext(), true);
 	}
-	if (this->keys[GLFW_KEY_LEFT_SHIFT])
-	{
-		player.speed = 4.0;
-	}
 
-	if (this->keys[GLFW_KEY_W])
+	glm::vec2 inputDir(0);
+
+	if (this->keys[GLFW_KEY_W]) inputDir.y -= 1;
+	if (this->keys[GLFW_KEY_A]) inputDir.x -= 1;
+	if (this->keys[GLFW_KEY_S]) inputDir.y += 1;
+	if (this->keys[GLFW_KEY_D]) inputDir.x += 1;
+
+	if (glm::length(inputDir) > 0)
 	{
-		player.move({ 0.0, -1.0 });
+		player.velocity = glm::normalize(inputDir);
+
+		if (this->keys[GLFW_KEY_LEFT_SHIFT])
+		{
+			player.setState(RUNNING);
+		}
+		else
+		{
+			player.setState(WALKING);
+		}
+		player.move(dt);
 	}
-	if (this->keys[GLFW_KEY_S])
+	else
 	{
-		player.move({ 0.0, 1.0 });
+		player.velocity = glm::vec2(0);
+		player.setState(IDLE);
 	}
-	if (this->keys[GLFW_KEY_A])
+}
+
+void Game::updateCamera()
+{
+	glm::vec2 cameraPos =
+		this->player.position - glm::vec2(this->WIDTH / 2.0f, this->HEIGHT / 2.0f);
+	if (cameraPos != this->camera.lastPosition)
 	{
-		player.move({ -1.0, 0.0 });
-	}
-	if (this->keys[GLFW_KEY_D])
-	{
-		player.move({ 1.0, 0.0 });
+		this->camera.setPosition(cameraPos);
+		this->renderer.shader.setMat4("projection", this->camera.getProjectionMatrix());
+		this->camera.lastPosition = cameraPos;
 	}
 }

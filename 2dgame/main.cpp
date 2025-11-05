@@ -58,7 +58,8 @@ int main()
 		lastFrame = currentFrame;
 		glClear(GL_COLOR_BUFFER_BIT);
 		gameInst->processInput(deltaTime);
-		gameInst->tick();
+		gameInst->update(deltaTime);
+		gameInst->render();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

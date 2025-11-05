@@ -1,7 +1,11 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <variant>
 
 namespace Collision {
+
+	using Grid = std::unordered_map<size_t, std::vector<size_t>>;
+
 	enum Shape {
 		RECTANGLE, ELLIPSE, POLYGON, CIRCLE, POINT
 	};
@@ -37,6 +41,20 @@ namespace Collision {
 		float rotation;
 		glm::vec2 size;
 	};
+
+	using CollisionObject = std::variant<
+		CollisionBox<RECTANGLE>,
+		CollisionBox<CIRCLE>,
+		CollisionBox<POLYGON>,
+		CollisionBox<POINT>,
+		CollisionBox<ELLIPSE>
+	>;
+
+	Grid buildSpacialGrid(
+		const std::vector<CollisionObject>& objects, 
+		float cellSize);
+
+	size_t hash(int x, int y);
 
 
 }

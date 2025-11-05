@@ -111,7 +111,7 @@ void ConfigLoader::loadBitmap(const char* file)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			int idx = (y * width + x) * channels;
+			int idx = ((y * width) + x) * channels;
 			unsigned char r = data[idx];
 			unsigned char g = data[idx + 1];
 			unsigned char b = data[idx + 2];

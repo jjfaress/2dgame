@@ -2,7 +2,7 @@
 #include "TiledMap.h"
 #include <GLFW/glfw3.h>
 #include "Camera.h"
-#include "Player.h"
+#include "Character.h"
 
 using uint = unsigned int;
 
@@ -25,11 +25,13 @@ public:
 
 	void init();
 	void update(float dt);
-	void tick();
+	void render();
 	void processInput(float dt);
+	void updateCamera();
 
 private:
 	Character player;
 	Camera camera;
 	SpriteRenderer renderer;
+	Collision::Grid collisions;
 };

@@ -4,17 +4,10 @@
 #include "Collision.h"
 #include <variant>
 
-
 namespace TiledMap {
 
 	using namespace Collision;
-	using CollisionObject = std::variant<
-		CollisionBox<RECTANGLE>,
-		CollisionBox<CIRCLE>,
-		CollisionBox<POLYGON>,
-		CollisionBox<POINT>,
-		CollisionBox<ELLIPSE>
-	>;
+
 
 	struct Temp {
 		int32_t width, height, tileWidth, tileHeight;

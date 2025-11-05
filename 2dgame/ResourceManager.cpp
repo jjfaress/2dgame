@@ -4,6 +4,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glad/glad.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 Shader ResourceManager::getShader(std::string name)
 {
@@ -16,9 +19,10 @@ std::map<std::string, Shader>& ResourceManager::getShadersMap()
 	return shaders;
 }
 
+
 Shader ResourceManager::loadShader(const char* vertexSource, const char* fragmentSource, std::string name)
 {
-	if (getShadersMap().find(name) == getShadersMap().end())
+	if (!getShadersMap().contains(name))
 	{
 		getShadersMap()[name] = loadShaderFromFile(vertexSource, fragmentSource);
 	}
@@ -56,6 +60,50 @@ Texture2D ResourceManager::getTexture(std::string name)
 	return getTexturesMap()[name];
 }
 
+AnimationData ResourceManager::parseSpriteSheet(std::string& fileName, std::string& spriteDir)
+{
+	AnimationData ad;
+	std::string stringPath(spriteDir + fileName);
+
+	std::ifstream f(stringPath);
+	if (!f.is_open())
+	{
+		std::cout << "ERROR: Could not open file: " << stringPath << std::endl;
+		return AnimationData();  // Return empty
+	}
+
+	json data = json::parse(f);
+
+	std::string image = data["meta"]["image"];
+	ad.texture = loadTexture((spriteDir + image).c_str(), image);
+
+	unsigned int sheetW = data["meta"]["size"]["w"];
+	unsigned int sheetH = data["meta"]["size"]["h"];
+
+	for (auto& frame : data["frames"])
+	{
+		FrameData fd;
+		auto& temp = frame["frame"];
+		float x = temp["x"];
+		float y = temp["y"];
+		float w = temp["w"];
+		float h = temp["h"];
+
+		fd.uvTopLeft = { x / sheetW, y / sheetH };
+		fd.uvBotRight = { (x + w) / sheetW, (y + h) / sheetH };
+		fd.size = { w, h };
+		fd.duration = frame["duration"] * 0.001;
+
+		ad.frames.push_back(fd);
+	}
+
+	for (auto& tag : data["meta"]["frameTags"])
+	{
+		ad.tags[tag["name"]] = { tag["from"], tag["to"] };
+	}
+	return ad;
+}
+
 std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
 {
 	static std::map<std::string, Texture2D> textures;
@@ -65,7 +113,7 @@ std::map<std::string, Texture2D>& ResourceManager::getTexturesMap()
 Texture2D ResourceManager::loadTexture(const char* file, std::string name, bool flip)
 {
 	stbi_set_flip_vertically_on_load(flip);
-	if (getTexturesMap().find(name) == getTexturesMap().end())
+	if (!getTexturesMap().contains(name))
 	{
 		getTexturesMap()[name] = loadTextureFromFile(file);
 	}
