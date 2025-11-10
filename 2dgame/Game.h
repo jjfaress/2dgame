@@ -1,6 +1,6 @@
 #pragma once
 #include "TiledMap.h"
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 #include "Camera.h"
 #include "Character.h"
 
@@ -14,24 +14,26 @@ enum GameState {
 
 class Game {
 public:
-	GameState State= HUB;
+	GameState State = HUB;
 	bool keys[512] = {};
 	bool buttons[16] = {};
 	uint WIDTH, HEIGHT;
-	TiledMap::MapData level;
+	std::vector<CollisionObject> colliders;
+	Texture2D map;
 
 	Game(uint screen_width, uint screen_height);
 	~Game();
 
 	void init();
 	void update(float dt);
-	void render();
+	void tick();
+	void render(float alpha);
 	void processInput(float dt);
-	void updateCamera();
+	void updateCamera(float alpha);
+	void checkCollision(std::vector<CollisionObject>& objects);
 
 private:
 	Character player;
 	Camera camera;
 	SpriteRenderer renderer;
-	Collision::Grid collisions;
 };

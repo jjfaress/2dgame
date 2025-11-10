@@ -1,8 +1,9 @@
 #include "SpriteRenderer.h"
 #include <glad/glad.h>
 
-void SpriteRenderer::init()
+void SpriteRenderer::init(Shader shader)
 {
+	this->shader = shader;
 	initRenderData();
 }
 
@@ -16,6 +17,7 @@ void SpriteRenderer::drawSprite(
 	Texture2D texture,
 	glm::vec2 position,
 	Origin origin,
+	glm::vec2 flipAxis,
 	glm::vec2 scale,
 	float rotate,
 	glm::vec3 color)
@@ -25,15 +27,16 @@ void SpriteRenderer::drawSprite(
 	fd.uvBotRight = glm::vec2(1.0f, 1.0f);
 	fd.size = glm::vec2(texture.WIDTH, texture.HEIGHT);
 
-	drawSprite(texture, position, fd, origin, scale, rotate, color);
+	drawSprite(texture, position, fd, origin, flipAxis, scale, rotate, color);
 }
 
 void SpriteRenderer::drawSprite(
 	Texture2D texture,
 	glm::vec2 position,
 	FrameData fd,
-	Origin origin, 
-	glm::vec2 scale, 
+	Origin origin,
+	glm::vec2 flipAxis,
+	glm::vec2 scale,
 	float rotate,
 	glm::vec3 color)
 {
@@ -66,6 +69,15 @@ void SpriteRenderer::drawSprite(
 	case C:
 		position -= glm::vec2(std::floorf(spriteSize.x / 2), std::floorf(spriteSize.y / 2));
 		break;
+	}
+
+	if (flipAxis.x > 0)
+	{
+		std::swap(fd.uvTopLeft.x, fd.uvBotRight.x);
+	}
+	if (flipAxis.y > 0)
+	{
+		std::swap(fd.uvTopLeft.y, fd.uvBotRight.y);
 	}
 
 	float vertices[] = {
@@ -118,7 +130,7 @@ void SpriteRenderer::initRenderData()
 	glGenBuffers(1, &this->VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
 	glBindVertexArray(this->quadVAO);
 	glEnableVertexAttribArray(0);

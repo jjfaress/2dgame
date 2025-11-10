@@ -1,63 +1,60 @@
 #include "TiledMap.h"
 #include "ResourceManager.h"
 #include <glad/glad.h>
+#include <fstream>
 
 namespace TiledMap {
 
-	void parseTiles(
-		tson::Tileset* tileset,
-		const std::string& spriteDir,
-		Temp& mapData)
+	void parseTiles(json& tilesets, const std::string& spriteDir, Temp& mapData)
 	{
-		std::unordered_map<int, std::vector<tson::Object>> newObjects;
-		for (int i = 1; i <= tileset->getTileCount(); i++)
+		for (auto& tileset : tilesets)
 		{
-			tson::Tile* tile = tileset->getTile(i);
-			std::string texName(tile->getImage().string());
-			ResourceManager::loadTexture(
-				(spriteDir + texName).c_str(), std::to_string(i), true);
-
-			auto& objects = tile->getObjectgroup().getObjects();
-			if (!objects.empty())
+			for (auto& tile : tileset["tiles"])
 			{
-				mapData.tileObjects[i] = objects;
+				int i = tile["id"].get<int>() + 1;
+				std::string texName = tile["image"];
+				ResourceManager::loadTexture(
+					(spriteDir + texName).c_str(), std::to_string(i), true);
+				if (tile.contains("objectgroup"))
+				{
+					mapData.tileObjects[i] = tile["objectgroup"]["objects"];
+				}
 			}
 		}
 	}
 
-	void parseLayers(std::vector<tson::Layer>& layers, Temp& mapData)
+	void parseLayers(json& layers, Temp& mapData)
 	{
-		std::vector<tson::Layer> tileLayers;
+		std::vector<json> tileLayers;
 		std::vector<CollisionObject> collisions;
 		for (auto& layer : layers)
 		{
-			if (layer.getType() == tson::LayerType::TileLayer)
+			if (layer["type"] == "tilelayer")
 			{
 				tileLayers.push_back(layer);
-				const std::vector<uint32_t>& data = layer.getData();
+				const std::vector<uint32_t>& data = layer["data"].get<std::vector<uint32_t>>();
 				std::vector<CollisionObject> tileObjects = parseTileObjects(data, mapData);
 				collisions.insert(collisions.end(), tileObjects.begin(), tileObjects.end());
 			}
-			else if (layer.getType() == tson::LayerType::ObjectGroup)
+			else if (layer["type"] == "objectgroup")
 			{
-				for (auto& object : layer.getObjects())
+				for (auto& object : layer["objects"])
 				{
-					if (object.getType() == "collision")
+					if (object["type"] == "collision")
 					{
 						collisions.push_back(buildObject(object));
 					}
-					else if (object.getType() == "POI")
+					else if (object["type"] == "POI")
 					{
-						mapData.POIs[object.getName()] = {
-							object.getPosition().x,
-							object.getPosition().y
+						mapData.POIs[object["name"]] = {
+							object["x"], object["y"]
 						};
 					}
 				}
 			}
 		}
 		mapData.layers = tileLayers;
-		mapData.worldCollisions = collisions;
+		mapData.colliders = collisions;
 	}
 
 	std::vector<CollisionObject> parseTileObjects(
@@ -76,8 +73,8 @@ namespace TiledMap {
 					for (auto& object : mapData.tileObjects[data[idx]])
 					{
 						glm::vec2 newPos(
-							(x * mapData.tileWidth) + object.getPosition().x,
-							(y * mapData.tileHeight) + object.getPosition().y
+							(x * mapData.tileWidth) + object["x"],
+							(y * mapData.tileHeight) + object["y"]
 						);
 						CollisionObject cb = buildObject(object);
 						std::visit([&](auto& box) {
@@ -91,35 +88,56 @@ namespace TiledMap {
 		return collisions;
 	}
 
-	CollisionObject buildObject(tson::Object& object)
+	CollisionObject buildObject(json& object)
 	{
-		if (object.isPoint())
+		if (object.contains("point"))
 		{
 			CollisionBox<POINT> cb{};
+			cb.position = {
+				object["x"],
+				object["y"]
+			};
 			return cb;
 		}
-		if (object.isEllipse())
+		if (object.contains("ellipse"))
 		{
+			if (object["width"] == object["height"])
+			{
+				CollisionBox<CIRCLE> cb{};
+				cb.position = {
+					object["width"] / 2,
+					object["height"] / 2 };
+				cb.radius = object["width"] / 2;
+				return cb;
+			}
 			CollisionBox<ELLIPSE> cb{};
-			cb.size = { object.getSize().x, object.getSize().y };
-			cb.rotation = object.getRotation();
+			cb.position = {
+				object["x"],
+				object["y"] };
+			cb.size.x = object["width"];
+			cb.size.y = object["height"];
+			cb.rotation = object["rotation"];
 			return cb;
 		}
-		if (!object.getPolygons().empty())
+		if (object.contains("polygon"))
 		{
 			CollisionBox<POLYGON> cb{};
-			cb.rotation = object.getRotation();
+			cb.position = { object["x"], object["y"] };
 			std::vector<glm::vec2> points;
-			for (auto& point : object.getPolygons())
+			for (auto& point : object["polygon"])
 			{
-				points.push_back({ point.x, point.y });
+				points.push_back({ point["x"], point["y"] });
 			}
 			cb.points = points;
+			cb.rotation = object["rotation"];
 			return cb;
 		}
 		CollisionBox<RECTANGLE> cb{};
-		cb.size = { object.getSize().x, object.getSize().y };
-		cb.rotation = object.getRotation();
+		cb.position.x = object["x"];
+		cb.position.y = object["y"];
+		cb.size.x = object["width"];
+		cb.size.y = object["height"];
+		cb.rotation = object["rotation"];
 		return cb;
 	}
 
@@ -166,16 +184,17 @@ namespace TiledMap {
 
 		for (auto& layer : mapData.layers)
 		{
-			std::vector<uint32_t> data = layer.getData();
-			for (int y = 0; y < layer.getSize().y; y++)
+			std::vector<uint32_t> data = layer["data"];
+			for (int y = 0; y < layer["height"]; y++)
 			{
-				for (int x = 0; x < layer.getSize().x; x++)
+				for (int x = 0; x < layer["width"]; x++)
 				{
 					int idx = (y * mapData.width) + x;
 					if (data[idx] == 0) continue;
 					renderer.drawSprite(
 						ResourceManager::getTexture(std::to_string(data[idx])),
-						{ x * mapData.tileWidth, (mapData.height - y - 1) * mapData.tileHeight},
+						//{ x * mapData.tileWidth, y * mapData.tileHeight },
+						{ x * mapData.tileWidth, (mapData.height - y - 1) * mapData.tileHeight },
 						TL);
 				}
 			}
@@ -186,23 +205,24 @@ namespace TiledMap {
 	}
 
 	MapData loadMap(
-		const std::string& mapPath, 
-		const std::string& spriteDir, 
+		const std::string& mapPath,
+		const std::string& spriteDir,
 		SpriteRenderer& renderer)
 	{
-		tson::Tileson t;
-		std::unique_ptr<tson::Map> map = t.parse(mapPath);
-		Temp temp{};
-		if (map->getStatus() == tson::ParseStatus::OK)
+		std::ifstream f(mapPath);
+		if (!f.is_open())
 		{
-			temp.width = map->getSize().x;
-			temp.height = map->getSize().y;
-			temp.tileWidth = map->getTileSize().x;
-			temp.tileHeight = map->getTileSize().y;
-			parseTiles(map->getTileset("ts"), spriteDir, temp);
-			parseLayers(map->getLayers(), temp);
-			drawToFrameBuffer(temp, renderer);
+			std::cout << "ERROR: Could not open file: " << mapPath << std::endl;
 		}
-		return MapData({ temp.texture, temp.worldCollisions, temp.POIs });
+		json map = json::parse(f);
+		Temp temp{};
+		temp.width = map["width"];
+		temp.height = map["height"];
+		temp.tileWidth = map["tilewidth"];
+		temp.tileHeight = map["tileheight"];
+		parseTiles(map["tilesets"], spriteDir, temp);
+		parseLayers(map["layers"], temp);
+		drawToFrameBuffer(temp, renderer);
+		return MapData({ temp.texture, temp.colliders, temp.POIs });
 	}
 }

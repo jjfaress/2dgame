@@ -151,12 +151,10 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="noiseutils.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="TiledMap.cpp" />
-    <ClCompile Include="WFCMap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -169,14 +167,11 @@
     <ClInclude Include="ConfigLoader.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="Globals.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="noiseutils.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="TiledMap.h" />
-    <ClInclude Include="tileson.hpp" />
-    <ClInclude Include="WFCMap.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteRenderer.h" />

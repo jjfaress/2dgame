@@ -26,7 +26,7 @@ public:
 	SpriteRenderer(const SpriteRenderer&& other) = delete;
 	SpriteRenderer& operator=(const SpriteRenderer& other) = delete;
 
-	void init();
+	void init(Shader shader);
 	void destroy();
 	void setShader(Shader& shader);
 
@@ -35,6 +35,7 @@ public:
 		glm::vec2 position,
 		FrameData fd,
 		Origin origin = TL,
+		glm::vec2 flipAxis = glm::vec2(0),
 		glm::vec2 scale = glm::vec2(1.0f),
 		float rotate = 0.0f,
 		glm::vec3 color = glm::vec3(1.0f));
@@ -43,6 +44,7 @@ public:
 		Texture2D texture,
 		glm::vec2 position,
 		Origin origin = TL,
+		glm::vec2 flipAxis = glm::vec2(0),
 		glm::vec2 scale = glm::vec2(1.0f),
 		float rotate = 0.0f,
 		glm::vec3 color = glm::vec3(1.0f));

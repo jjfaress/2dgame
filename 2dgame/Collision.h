@@ -5,7 +5,7 @@
 namespace Collision {
 
 	using Grid = std::unordered_map<size_t, std::vector<size_t>>;
-
+	
 	enum Shape {
 		RECTANGLE, ELLIPSE, POLYGON, CIRCLE, POINT
 	};
@@ -54,7 +54,9 @@ namespace Collision {
 		const std::vector<CollisionObject>& objects, 
 		float cellSize);
 
-	size_t hash(int x, int y);
+	size_t hashPosition(int x, int y);
 
+	std::vector<std::pair<int, int>> getAdjacentPairs(Grid& grid);
 
+	bool checkAABB(CollisionBox<RECTANGLE> a, CollisionBox<RECTANGLE> b);
 }

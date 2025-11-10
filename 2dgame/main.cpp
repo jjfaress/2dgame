@@ -5,8 +5,10 @@
 #include <glm/glm.hpp>
 #include "TiledMap.h"
 
-int SCREEN_WIDTH = 480;
-int SCREEN_HEIGHT = 270;
+const int SCREEN_WIDTH = 480;
+const int SCREEN_HEIGHT = 270;
+const float tickRate = 1.0f / 60.0f;
+float tickAccum = 0;
 
 void framebufferSize(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -56,10 +58,21 @@ int main()
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		glClear(GL_COLOR_BUFFER_BIT);
+
+		tickAccum += deltaTime;
+
 		gameInst->processInput(deltaTime);
 		gameInst->update(deltaTime);
-		gameInst->render();
+
+		float alpha = tickAccum / tickRate;
+		while (tickAccum >= tickRate)
+		{
+			gameInst->tick();
+			tickAccum -= tickRate;
+		}
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		gameInst->render(alpha);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

@@ -9,7 +9,6 @@ public:
 	unsigned int internalFormat;
 	unsigned int sWrap, tWrap;
 	unsigned int minFilter, maxFilter;
-	glm::vec2 origin;
 
 	Texture2D();
 	void generate(unsigned int width, unsigned int height, unsigned char* data);

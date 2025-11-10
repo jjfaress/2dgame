@@ -1,43 +1,44 @@
 #pragma once
-#include "tileson.hpp"
 #include "SpriteRenderer.h"
 #include "Collision.h"
 #include <variant>
+#include <nlohmann/json.hpp>
 
 namespace TiledMap {
 
 	using namespace Collision;
-
+	using json = nlohmann::json;
 
 	struct Temp {
 		int32_t width, height, tileWidth, tileHeight;
-		std::vector<tson::Layer> layers;
-		std::vector<CollisionObject> worldCollisions;
+		std::vector<json> layers;
+		std::vector<CollisionObject> colliders;
 		std::unordered_map<std::string, glm::vec2> POIs;
-		std::unordered_map<int, std::vector<tson::Object>> tileObjects;
+		std::unordered_map<int, std::vector<json>> tileObjects;
 		Texture2D texture;
 	};
 
 	struct MapData {
 		Texture2D texture;
-		std::vector<CollisionObject> worldCollisions;
+		std::vector<CollisionObject> colliders;
 		std::unordered_map<std::string, glm::vec2> POIs;
 	};
 
 	void parseTiles(
-		tson::Tileset* tileset,
+		json& tileset,
 		const std::string& spriteDir,
 		Temp& mapData);
 
+
 	void parseLayers(
-		std::vector<tson::Layer>& layers,
+		json& layers,
 		Temp& mapData);
 
 	std::vector<CollisionObject> parseTileObjects(
 		const std::vector<uint32_t>& layerData,
 		Temp& mapData);
 
-	CollisionObject buildObject(tson::Object& object);
+	CollisionObject buildObject(json& object);
 
 	void drawToFrameBuffer(
 		Temp& mapData, 
